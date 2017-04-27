@@ -15,7 +15,7 @@ public:
 	void printBoard(bool fullPrint) const;
 	int getPlayerScore(int player) const;
 	bool isPlayerDefeated(int player) const;
-	int getNextPlayer() const;
+	int getCurrentPlayer() const;
 	/* Search for the attack point in shipsMap:
 	* If attack point is not in map --> it's a Miss!
 	* Else, hit the ship in map by taking one off the ship life counter

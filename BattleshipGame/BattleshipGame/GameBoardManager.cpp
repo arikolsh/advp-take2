@@ -57,7 +57,7 @@ bool GameBoardManager::isPlayerDefeated(int player) const
 	return player == A_NUM ? _playersNumActiveShips.first <= 0 : _playersNumActiveShips.second <= 0;
 }
 
-int GameBoardManager::getNextPlayer() const
+int GameBoardManager::getCurrentPlayer() const
 {
 	return _currentPlayer;
 }
