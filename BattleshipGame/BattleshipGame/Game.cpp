@@ -16,7 +16,7 @@ using namespace std;
 #define B_NUM 1
 void GameOver(int winner, Player*(players)[2]);
 
-//////
+///////
 int main(int argc, char* argv[])
 {
 
