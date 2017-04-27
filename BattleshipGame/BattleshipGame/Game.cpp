@@ -10,7 +10,6 @@ using namespace std;
 #define A_NUM 0
 #define B_NUM 1
 void GameOver(int winner, GameBoardManager* manager);
-
 int main(int argc, char* argv[])
 {
 	bool debug = false;
