@@ -38,6 +38,7 @@ GameBoardManager::GameBoardManager(int rows, int cols)
 	_cols = cols + 2;
 	_playersNumActiveShips = { 0, 0 };
 	_playerScores = { 0, 0 };
+	_currentPlayer = A_NUM; //player A starts the game
 }
 
 GameBoardManager::~GameBoardManager()
@@ -55,6 +56,12 @@ bool GameBoardManager::isPlayerDefeated(int player) const
 {
 	return player == A_NUM ? _playersNumActiveShips.first <= 0 : _playersNumActiveShips.second <= 0;
 }
+
+int GameBoardManager::getNextPlayer() const
+{
+	return _currentPlayer;
+}
+
 /* Search for the attack point in shipsMap:
 * If attack point is not in map --> it's a Miss!
 * Else, hit the ship in map by taking one off the ship life counter
@@ -67,6 +74,7 @@ AttackResult GameBoardManager::executeAttack(int attackedPlayerNum, pair<int, in
 	if (found == _shipsMap.end()) //attack point not in map --> Miss
 	{
 		//cout << "Miss" << endl;
+		_currentPlayer = attackedPlayerNum;
 		return AttackResult::Miss;
 	}
 	auto ship = found->second.first; //attack point is in map --> get the ship
@@ -76,19 +84,25 @@ AttackResult GameBoardManager::executeAttack(int attackedPlayerNum, pair<int, in
 	{
 		//		//As mentioned on the forum, we can choose to return 'Miss' in this case. 
 		//		//Can easily change this behaviour to 'Hit' in next exercise..
+		_currentPlayer = attackedPlayerNum;
 		if (ship->getLife() == 0) //ship already sank.. Miss
 		{
 			//cout << "Miss (hit a sunken ship)" << endl;
 			return AttackResult::Miss;
 		}
-		//		cout << "Hit (ship was already hit befor but still has'nt sunk..)" << endl;
-		return AttackResult::Hit; //-1 indicates it's not the first hit
+		//		cout << "Hit (ship was already hit before but still has'nt sunk..)" << endl;
+		return AttackResult::Hit; //you don't get another turn if cell was already hit
 	}
 
-	ship->hit(); //ship--; //Hit the ship (Take one off the ship life)
+	ship->hit(); //Hit the ship (Take one off the ship life)
 	found->second.second = true; //Mark cell as a 'Hit'
-								 //cout << "Hit ship " << ship->getType() << endl;
-
+	//cout << "Hit ship " << ship->getType() << endl;
+	int shipType = ship->getType();
+	if (isOwnGoal(attackedPlayerNum, shipType))
+	{
+		//in case of own goal pass turn to opponent
+		_currentPlayer = attackedPlayerNum;
+	}
 	if (ship->getLife() == 0) //It's a Sink
 	{
 		if (attackedPlayerNum == A_NUM)
@@ -100,10 +114,9 @@ AttackResult GameBoardManager::executeAttack(int attackedPlayerNum, pair<int, in
 			_playersNumActiveShips.second--;
 		}
 		//update player points
-		int shipType = ship->getType();
 		//playerB's ship was the one that got hit
 		//add points to playerA
-		if(shipType==tolower(shipType)) 
+		if (shipType == tolower(shipType))
 		{
 			_playerScores.first += ship->getSinkPoints();
 		}
@@ -130,7 +143,7 @@ int GameBoardManager::init(string path)
 	if (err) {
 		return ERROR;
 	}
-	printBoard(false);
+	//printBoard(false);
 	return SUCCESS;
 }
 
@@ -318,8 +331,14 @@ int GameBoardManager::fillMapWithShips()
 	return SUCCESS;
 }
 
+bool GameBoardManager::isOwnGoal(int attackedPlayerNum, char shipType) const
+{
+	return attackedPlayerNum == A_NUM && shipType != toupper(shipType)
+		|| attackedPlayerNum == B_NUM && shipType != tolower(shipType);
+}
+
 int GameBoardManager::validateBoard() {
-	bool err = false;
+	bool err;
 	char visited = 'x';
 	char illgeal = 'i';
 	bool isAdjShips = false;

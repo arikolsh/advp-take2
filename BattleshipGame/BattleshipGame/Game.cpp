@@ -12,11 +12,11 @@ using namespace std;
 #define NUM_PLAYERS 2
 #define OPPONENT(i) (1 - i)
 #define PLAYER(i) ((i==0) ? "A" : "B")
-
+#define A_NUM 0
+#define B_NUM 1
 void GameOver(int winner, Player*(players)[2]);
 
 
-////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
 
@@ -36,12 +36,11 @@ int main(int argc, char* argv[])
 
 	//SETBOARD() IN EACH PLAYER
 
-	//INIT() PLAYERS
+	//INIT() PLAYERS -> IF PREDICTED FIND IN PATH ATTACK FILES //todo: brainstorm how to handle only one attack file
 
 	//START GAME ITERATIONS
 
 	////////////// END OF FLOW //////////////
-
 
 	//Variables to be used:
 	//int err, i, winner = -1;
@@ -50,7 +49,7 @@ int main(int argc, char* argv[])
 	//pair <AttackResult, int> attackResultAndScore, ownGoalResultAndScore;
 	//char boards[3][FULL_BOARD_LEN][FULL_BOARD_LEN]; /* [playerA's board, playerB's board, full board]  */
 
-	vector<string> inputFiles = { "", "", "" }; //[battle board, playerA's attack board, playerB's attack board]
+	vector<string> inputFiles = { "", "", "" }; //[battle board, dll 1, dll 2]
 	vector<string> dllNames = { "", "" };
 	vector<string> messages;
 
@@ -62,17 +61,24 @@ int main(int argc, char* argv[])
 	}
 	GameBoardManager game_board_manager(10, 10);
 	game_board_manager.init(inputFiles[0].c_str());
-
-
-	////Fill player boards with EMPTY-CELL symbols:
-	//for (i = 0; i < 3; i++)
-	//{
-	//	//GameUtils::cleanBoard(boards[i]); 
-	//}
-	//
-	////Insert all of the players ships into the full board:
-	////err = GameUtils::fillBoardFromFile(inputFiles[0].c_str(), boards[2]);
-	//if (err) { return EXIT_FAILURE; }
+	char** playerBoardA = game_board_manager.getPlayerBoard(A_NUM);
+	if (playerBoardA == nullptr)
+	{
+		return EXIT_FAILURE;
+	}
+	char** playerBoardB = game_board_manager.getPlayerBoard(B_NUM);
+	if (playerBoardB == nullptr)
+	{
+		GameBoardManager::freeBoard(playerBoardA,12,12);
+		return EXIT_FAILURE;
+	}
+	///todo: getPlayerBoards
+	//todo: players declare
+	//todo: get algorithms
+	//todo: players setboard() and init()
+	GameBoardManager::freeBoard(playerBoardA, 12, 12);
+	GameBoardManager::freeBoard(playerBoardB, 12, 12);
+	//todo: start iterations
 
 	////Initialize player A and player B:
 	//for (i = 0; i < 2; i++)

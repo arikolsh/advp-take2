@@ -15,6 +15,7 @@ public:
 	void printBoard(bool fullPrint) const;
 	int getPlayerScore(int player) const;
 	bool isPlayerDefeated(int player) const;
+	int getNextPlayer() const;
 	/* Search for the attack point in shipsMap:
 	* If attack point is not in map --> it's a Miss!
 	* Else, hit the ship in map by taking one off the ship life counter
@@ -29,6 +30,8 @@ private:
 	pair<int, int> _playersNumActiveShips;
 	int _rows;
 	int _cols;
+	/*who is the next player to attack*/
+	int _currentPlayer;
 	/* The full board for gui purposes*/
 	vector<string> _fullBoard;
 	/* The game board is implemented using a private map.
@@ -54,5 +57,7 @@ private:
 	* fillPlayerBoard gets the full board with both players ships,
 	* and fills the given player's board with his ships only. */
 	int fillMapWithShips();
+	/*return true if own goal*/
+	bool isOwnGoal(int attackedPlayerNum, char shipType) const;
 };
 
