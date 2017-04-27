@@ -16,7 +16,7 @@ using namespace std;
 void GameOver(int winner, Player*(players)[2]);
 
 
-
+////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
 
