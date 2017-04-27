@@ -12,8 +12,8 @@ using namespace std;
 void GameOver(int winner, GameBoardManager* manager);
 int main(int argc, char* argv[])
 {
-	bool debug = false;
-	if (debug) { //debug start
+	bool debug1 = false, debug2 = false;
+	if (debug1) { //debug start
 		//Variables to be used:
 		int currentPlayerNum, winner = -1;
 		//finishedAttacks[i] is true iff players[i] finished all his attacks
@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
 
 		IBattleshipGameAlgo * players[NUM_PLAYERS];
 		//todo: get algorithms
+		//todo: load dlls
 		players[A_NUM]; // = new PredictedPlayer(); //=GetAlgorithm();
 		players[B_NUM]; // = new PredictedPlayer(); //=GetAlgorithm();
 		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), 12, 12);
@@ -102,6 +103,44 @@ int main(int argc, char* argv[])
 		delete players[A_NUM];
 		delete players[B_NUM];
 	} //debug end
+
+	if (debug2)
+	{//debug start
+	 ////////////// FLOW //////////////
+
+	 //GET INPUT FILES: DLL, BOARD //done
+
+	 //INIT GAME_BOARD INSTANCE//done
+
+	 //DECLARE PLAYERS, INIT PLAYERS ARRAY
+
+	 //GET ALGORITHMS
+
+	 //GET PLAYER BOARD A
+
+	 //GET PLAYER BOARD B
+
+	 //SETBOARD() IN EACH PLAYER
+
+	 //INIT() PLAYERS -> IF PREDICTED FIND IN PATH ATTACK FILES //todo: brainstorm how to handle only one attack file
+
+	 //START GAME ITERATIONS
+
+	 ////////////// END OF FLOW //////////////
+
+		vector<string> inputFiles = { "", "", "" };
+		vector<string> dllNames = { "", "" };
+		vector<string> messages;
+
+		//Prepare the game:
+		int err = GameUtils::getInputFiles(inputFiles, messages, dllNames, argc, "");
+		if (err)
+		{
+			return EXIT_FAILURE;
+		}
+		GameBoardManager game_board_manager(10, 10);
+		game_board_manager.init(inputFiles[0].c_str());
+	}//debug end
 	return EXIT_SUCCESS;
 
 }
