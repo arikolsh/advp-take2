@@ -1,5 +1,6 @@
 #pragma once
 #include "GameBoard.h"
+#define NUM_PLAYERS 2
 
 class GameManager{
 public:
@@ -14,6 +15,8 @@ public:
 	* If ship life has now become 0 --> it's a Sink!
 	* Else, return Hit. */
 	AttackResult executeAttack(int attackedPlayerNum, pair<int, int> attack);
+	void gameOver(int winner) const;
+	int runGame(IBattleshipGameAlgo * players[NUM_PLAYERS]);
 private: 
 	GameManager() = delete;
 	GameManager(const GameManager& that) = delete;

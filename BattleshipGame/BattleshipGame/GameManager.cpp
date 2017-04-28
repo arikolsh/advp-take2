@@ -1,5 +1,7 @@
 #include "GameManager.h"
+#include <iostream>
 #define NUM_SHIP_TYPES 4
+#define NUM_PLAYERS 2
 #define A_NUM 0
 #define B_NUM 1
 
@@ -101,4 +103,62 @@ bool GameManager::isOwnGoal(int attackedPlayerNum, char shipType)
 {
 	return attackedPlayerNum == A_NUM && shipType != toupper(shipType)
 		|| attackedPlayerNum == B_NUM && shipType != tolower(shipType);
+}
+
+
+void GameManager::gameOver(int winner) const
+{
+	if (winner != -1) //We have a winner
+	{
+		cout << "Player " << (winner == A_NUM ? "A" : "B") << " won" << endl;
+	}
+	cout << "Points:" << endl;
+	cout << "Player A: " << _playerScores.first << endl;
+	cout << "Player B: " << _playerScores.second << endl;
+}
+
+int GameManager:: runGame(IBattleshipGameAlgo* players[NUM_PLAYERS])
+{
+
+	// Each player declares his next attack.
+	// Then, his enemy executes the attack and returns the AttackResult.
+	// If the player hits an enemy's ship, he gets another turn
+	// If the player make an own goal, he doesn't get another turn
+	// Game is over once a player loses all his ships, or all attackes were taken.
+	int currentPlayerNum, winner = -1;
+	//finishedAttacks[i] is true iff players[i] finished all his attacks
+	bool finishedAttacks[NUM_PLAYERS] = { false,false };
+	pair<int, int> attackPoint;
+	AttackResult attackResult;
+	while (true)
+	{
+		currentPlayerNum = getCurrentPlayer();
+		//Player declares his next attack:
+		attackPoint = players[currentPlayerNum]->attack();
+		if (attackPoint.first == -1 && attackPoint.second == -1)
+		{
+			finishedAttacks[currentPlayerNum] = true;
+		}
+		if (finishedAttacks[0] && finishedAttacks[1])
+		{ //both players finished all their attacks
+			break;
+		}
+		attackResult = executeAttack(1 - currentPlayerNum, attackPoint);
+		players[A_NUM]->notifyOnAttackResult(currentPlayerNum, attackPoint.first, attackPoint.second, attackResult);
+		players[B_NUM]->notifyOnAttackResult(currentPlayerNum, attackPoint.first, attackPoint.second, attackResult);
+		//check for defeated players
+		if (isPlayerDefeated(1 - currentPlayerNum))
+		{
+			//current player sunk all opponent's ships
+			winner = currentPlayerNum; //winner is the current player
+			break;
+		}
+		if (isPlayerDefeated(currentPlayerNum))
+		{
+			//current player sunk his own last ship
+			winner = 1 - currentPlayerNum; //winner is the opponent
+			break;
+		}
+	}
+	return winner;
 }
