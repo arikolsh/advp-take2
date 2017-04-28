@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 		vector<string> dllNames = { "", "" };
 		vector<string> messages;
 		string searchDir = argc >= 1 ? "" : argv[1]; //todo: check if quiet\path
-		////////// get DLLs and board file //////////
+		/* get DLLs and board file */
 		int err = GameUtils::getInputFiles(inputFiles, messages, dllNames, argc, searchDir);
 		if (err) { return EXIT_FAILURE; }
 		/* init game board data structure */
@@ -37,7 +37,6 @@ int main(int argc, char* argv[])
 		/* declare players */
 		IBattleshipGameAlgo * players[NUM_PLAYERS];
 		//todo: get algorithms
-
 		/* init player A */
 		players[A_NUM]; // = new PredictedPlayer(); //=GetAlgorithm();
 		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), 12, 12);
@@ -48,7 +47,6 @@ int main(int argc, char* argv[])
 			return EXIT_FAILURE;
 		}
 		GameBoard::freeBoard(playerBoardA, 12, 12);
-
 		/* init player B */
 		players[B_NUM]; // = new PredictedPlayer(); //=GetAlgorithm();
 		players[B_NUM]->setBoard(B_NUM, const_cast<const char **>(playerBoardB), 12, 12);
