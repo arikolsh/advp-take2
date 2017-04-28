@@ -46,7 +46,7 @@ bool PredictedPlayer::init(const std::string& path)
 void PredictedPlayer::SetAttackFilePath(int playerNum, const string& dirPath)
 {
 	vector<string> attackFiles = { EMPTY, EMPTY };
-	switch (getInputFiles(attackFiles, dirPath))
+	switch (getAttackFiles(attackFiles, dirPath))
 	{
 	case 1:
 		_attackFilePath = attackFiles[0];
@@ -97,7 +97,7 @@ void PredictedPlayer::getAttacksFromFile()
 	// Read entire attack file and insert all legal attacks to a vector
 	while (getline(_attackFile, line)) //checked: getline catch \r\n and \n.
 	{
-		attack = GetAttackPair(line);
+		attack = getAttackPair(line);
 		if (!IsValidAttack(attack))
 		{
 			continue;
@@ -116,7 +116,7 @@ bool PredictedPlayer::IsValidAttack(pair<int, int> attack)
 }
 
 
-pair<int, int> PredictedPlayer::GetAttackPair(string& line) const
+pair<int, int> PredictedPlayer::getAttackPair(string& line) const
 {
 	pair<int, int> attack = { -1,-1 };
 	int i, j;
@@ -186,7 +186,7 @@ pair<int, int> PredictedPlayer::GetAttackPair(string& line) const
 }
 
 
-int PredictedPlayer::getInputFiles(vector<string> & attackFiles, string searchDir) const
+int PredictedPlayer::getAttackFiles(vector<string> & attackFiles, string searchDir) const
 {
 	int numOfFiles;
 	vector<string> messages;

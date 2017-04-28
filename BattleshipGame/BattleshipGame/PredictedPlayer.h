@@ -39,7 +39,7 @@ private:
 	int PredictedPlayer::fetchInputFiles(vector<string> & attackFiles, vector<string> & messages, const string path) const;
 	static int PredictedPlayer::execCmd(char const * cmd, string & shellRes);
 	static void PredictedPlayer::showMessages(vector<string> messages);
-	int PredictedPlayer::getInputFiles(vector<string> & attackFiles, string searchDir) const;
+	int PredictedPlayer::getAttackFiles(vector<string> & attackFiles, string searchDir) const;
 	void SetAttackFilePath(int playerNum, const string& path);
-	pair<int, int> GetAttackPair(string& line) const;
+	pair<int, int> getAttackPair(string& line) const;
 };
