@@ -49,8 +49,7 @@ AttackResult GameManager::executeAttack(int attackedPlayerNum, pair<int, int> at
 
 	if (shipWasHit == true) //Not the first hit on this specific cell (i,j)
 	{
-		//		//As mentioned on the forum, we can choose to return 'Miss' in this case. 
-		//		//Can easily change this behaviour to 'Hit' in next exercise..
+		//pass turn to opponent
 		_currentPlayer = attackedPlayerNum;
 		if (ship->getLife() == 0) //ship already sank.. Miss
 		{
