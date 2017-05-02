@@ -30,9 +30,8 @@
 
 
 
-int GameUtils::getInputFiles(vector<string> & inputFiles, vector<string> & messages, vector<string> & DLLNames, int argc, char *argv[])
+int GameUtils::getInputFiles(vector<string> & inputFiles, vector<string> & messages, vector<string> & DLLNames, int argc, string searchDir)
 {
-	string searchDir = argc == 1 ? "" : argv[1];
 	int op_res = fetchInputFiles(inputFiles, messages, DLLNames, searchDir);
 	if (op_res == 1)
 	{

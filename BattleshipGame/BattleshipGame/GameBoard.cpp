@@ -1,9 +1,11 @@
-#include "GameBoardManager.h"
+#include "GameBoard.h"
 #include <cstdio>
 #include <locale>
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <windows.h>
+
 #define ALLOC_ERR printf("Error: Allocation error\n")
 #define ADJ_SHIPS_ERR printf("Adjacent Ships on Board\n")
 #define TOO_FEW_SHIPS_ERR(j) printf("Too few ships for player %c\n",j)
@@ -29,110 +31,21 @@
 #define A_NUM 0
 #define B_NUM 1
 
-
 /* class methods implementation */
-GameBoardManager::GameBoardManager(int rows, int cols)
+GameBoard::GameBoard(int rows, int cols)
 {
 	//add padding
 	_rows = rows + 2;
 	_cols = cols + 2;
-	_playersNumActiveShips = { 0, 0 };
-	_playerScores = { 0, 0 };
-	_currentPlayer = A_NUM; //player A starts the game
 }
 
-GameBoardManager::~GameBoardManager()
+GameBoard::~GameBoard()
 {
 	//Remove all map elements while freeing the shared_ptr<Ship> ships:
 	_shipsMap.clear();
 }
 
-int GameBoardManager::getPlayerScore(int player) const
-{
-	return player == A_NUM ? _playerScores.first : _playerScores.second;
-}
-
-bool GameBoardManager::isPlayerDefeated(int player) const
-{
-	return player == A_NUM ? _playersNumActiveShips.first <= 0 : _playersNumActiveShips.second <= 0;
-}
-
-int GameBoardManager::getNextPlayer() const
-{
-	return _currentPlayer;
-}
-
-/* Search for the attack point in shipsMap:
-* If attack point is not in map --> it's a Miss!
-* Else, hit the ship in map by taking one off the ship life counter
-* If ship life is 0 (already sank) consider a Miss.
-* If ship life has now become 0 --> it's a Sink!
-* Else, return Hit. */
-AttackResult GameBoardManager::executeAttack(int attackedPlayerNum, pair<int, int> attack)
-{
-	auto found = _shipsMap.find(attack);
-	if (found == _shipsMap.end()) //attack point not in map --> Miss
-	{
-		//cout << "Miss" << endl;
-		_currentPlayer = attackedPlayerNum;
-		return AttackResult::Miss;
-	}
-	auto ship = found->second.first; //attack point is in map --> get the ship
-	auto shipWasHit = found->second.second;
-
-	if (shipWasHit == true) //Not the first hit on this specific cell (i,j)
-	{
-		//		//As mentioned on the forum, we can choose to return 'Miss' in this case. 
-		//		//Can easily change this behaviour to 'Hit' in next exercise..
-		_currentPlayer = attackedPlayerNum;
-		if (ship->getLife() == 0) //ship already sank.. Miss
-		{
-			//cout << "Miss (hit a sunken ship)" << endl;
-			return AttackResult::Miss;
-		}
-		//		cout << "Hit (ship was already hit before but still has'nt sunk..)" << endl;
-		return AttackResult::Hit; //you don't get another turn if cell was already hit
-	}
-
-	ship->hit(); //Hit the ship (Take one off the ship life)
-	found->second.second = true; //Mark cell as a 'Hit'
-	//cout << "Hit ship " << ship->getType() << endl;
-	int shipType = ship->getType();
-	if (isOwnGoal(attackedPlayerNum, shipType))
-	{
-		//in case of own goal pass turn to opponent
-		_currentPlayer = attackedPlayerNum;
-	}
-	if (ship->getLife() == 0) //It's a Sink
-	{
-		if (attackedPlayerNum == A_NUM)
-		{
-			_playersNumActiveShips.first--;
-		}
-		else
-		{
-			_playersNumActiveShips.second--;
-		}
-		//update player points
-		//playerB's ship was the one that got hit
-		//add points to playerA
-		if (shipType == tolower(shipType))
-		{
-			_playerScores.first += ship->getSinkPoints();
-		}
-		//playerA's ship was the one that got hit
-		//add points to playerB
-		else
-		{
-			_playerScores.second += ship->getSinkPoints();
-		}
-		//cout << "Sink! Score: " << ship->getSinkPoints() << endl;
-		return AttackResult::Sink;
-	}
-	return AttackResult::Hit; //Hit
-}
-
-int GameBoardManager::init(string path)
+int GameBoard::init(string path)
 {
 	int err;
 	err = fillBoardFromFile(path);
@@ -143,11 +56,11 @@ int GameBoardManager::init(string path)
 	if (err) {
 		return ERROR;
 	}
-	//printBoard(false);
+	printBoard(true);
 	return SUCCESS;
 }
 
-void GameBoardManager::cleanBoard(char** board) const
+void GameBoard::cleanBoard(char** board) const
 {
 	for (int i = 0; i < _rows; i++) {
 		for (int j = 0; j < _cols; j++) {
@@ -156,7 +69,7 @@ void GameBoardManager::cleanBoard(char** board) const
 	}
 }
 
-char** GameBoardManager::getCleanBoard(bool clean) const
+char** GameBoard::getCleanBoard(bool clean) const
 {
 	char** board = static_cast<char**>(malloc(_rows * sizeof(char*)));
 	if (board == nullptr)
@@ -182,12 +95,12 @@ char** GameBoardManager::getCleanBoard(bool clean) const
 
 }
 
-vector<string> GameBoardManager::getFullBoard() const
+vector<string> GameBoard::getFullBoard() const
 {
 	return _fullBoard;
 }
 
-char ** GameBoardManager::getPlayerBoard(int player) const
+char ** GameBoard::getPlayerBoard(int player) const
 {
 	char c;
 	bool condition;
@@ -214,7 +127,7 @@ char ** GameBoardManager::getPlayerBoard(int player) const
 	return playerBoard;
 }
 
-void GameBoardManager::printBoard(bool fullPrint) const
+void GameBoard::printBoard(bool fullPrint) const
 {
 	int start, rowEnd, colEnd;
 	start = fullPrint ? 0 : 1;
@@ -224,15 +137,22 @@ void GameBoardManager::printBoard(bool fullPrint) const
 		for (int j = start; j < colEnd; j++) {
 			if (_fullBoard[i][j] == ' ')
 			{
-				printf("*");
+				cout << EMPTY_CELL;
 			}
-			else { printf("%c", _fullBoard[i][j]); }
+			else {
+				cout << _fullBoard[i][j];
+			}
 		}
-		printf("\n");
+		cout<<endl;
 	}
 }
 
-void GameBoardManager::freeBoard(char ** board, int rows, int cols)
+map<pair<int, int>, pair<shared_ptr<Ship>, bool>> GameBoard::getShipsMap()
+{
+	return _shipsMap;
+}
+
+void GameBoard::freeBoard(char ** board, int rows, int cols)
 {
 	if (board == nullptr)
 	{
@@ -248,7 +168,7 @@ void GameBoardManager::freeBoard(char ** board, int rows, int cols)
 	board = nullptr;
 }
 
-int GameBoardManager::fillBoardFromFile(string path)
+int GameBoard::fillBoardFromFile(string path)
 {
 	string line;
 	int row = 1, err;
@@ -282,7 +202,7 @@ int GameBoardManager::fillBoardFromFile(string path)
 	return SUCCESS;
 }
 
-int GameBoardManager::fillMapWithShips()
+int GameBoard::fillMapWithShips()
 {
 	int i, j, k, shipLen, direction;
 	pair<int, int> xy;
@@ -331,13 +251,7 @@ int GameBoardManager::fillMapWithShips()
 	return SUCCESS;
 }
 
-bool GameBoardManager::isOwnGoal(int attackedPlayerNum, char shipType) const
-{
-	return attackedPlayerNum == A_NUM && shipType != toupper(shipType)
-		|| attackedPlayerNum == B_NUM && shipType != tolower(shipType);
-}
-
-int GameBoardManager::validateBoard() {
+int GameBoard::validateBoard() {
 	bool err;
 	char visited = 'x';
 	char illgeal = 'i';
@@ -436,7 +350,7 @@ int GameBoardManager::validateBoard() {
 	return err ? ERROR : SUCCESS;
 }
 
-bool GameBoardManager::markInvalidShips(vector<string> boardCpy) {
+bool GameBoard::markInvalidShips(vector<string> boardCpy) {
 
 	bool err = false;
 	bool isInvalid = false; //stores if current ship is illegal in iteration
