@@ -4,7 +4,6 @@
 #include <filesystem>
 #include "GameBoard.h"
 #include "GameManager.h"
-#include "NaivePlayer.h"
 using namespace std;
 #define NUM_PLAYERS 2
 #define A_NUM 0
@@ -12,8 +11,8 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-	bool debug = true;
-	if (debug) { //debug start
+	bool debug[]{ false,true };
+	if (debug[0]) { //debug start
 		vector<string> inputFiles = { "", "", "" }; //[battle board, dll 1, dll 2]
 		vector<string> dllNames = { "", "" };
 		vector<string> messages;
@@ -65,6 +64,25 @@ int main(int argc, char* argv[])
 		delete players[A_NUM];
 		delete players[B_NUM];
 	} //debug end
+
+	if(debug[1])
+	{
+		vector<string> inputFiles = { "", "", "" }; //[battle board, dll 1, dll 2]
+		vector<string> dllNames = { "", "" };
+		vector<string> messages;
+		string searchDir = argc >= 1 ? "" : argv[1]; //todo: check if quiet\path
+													 /* get DLLs and board file */
+		int err = GameUtils::getInputFiles(inputFiles, messages, dllNames, argc, searchDir);
+		if (err) { return EXIT_FAILURE; }
+		/* init game board data structure */
+		GameBoard game_board(10, 10);
+		game_board.init(inputFiles[0].c_str());
+		game_board.printBoard(false);
+		/* get player boards */
+		char** playerBoardA = game_board.getPlayerBoard(A_NUM);
+		if (playerBoardA == nullptr) { return EXIT_FAILURE; }
+		GameBoard::printBoard(playerBoardA,12,12,false);
+	}
 	return EXIT_SUCCESS;
 
 }

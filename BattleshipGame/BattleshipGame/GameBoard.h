@@ -15,6 +15,13 @@ public:
 	void printBoard(bool fullPrint) const;
 	map<pair<int, int>, pair<shared_ptr<Ship>, bool> > getShipsMap();
 	static void freeBoard(char** board, int rows, int cols);
+	/* print external char 2d array. expect rows and cols to include padding. 
+	 * if full print is true then print padding. */
+	static void printBoard(char** board, int rows, int cols, bool fullPrint);
+	/* print external vector of strings. expect rows and cols to include padding.
+	* if full print is true then print padding. */
+	static void printBoard(vector<string> board, int rows, int cols,bool fullPrint);
+
 private:
 	int _rows;
 	int _cols;
