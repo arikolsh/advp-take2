@@ -26,6 +26,8 @@ private:
 	pair<int, int> _playersNumActiveShips;
 	/*who is the next player to attack*/
 	int _currentPlayer;
+	/*true iff game is in quiet mode i.e. no gui*/
+	bool _isQuiet;
 	/*return true if own goal*/
 	static bool isOwnGoal(int attackedPlayerNum, char shipType);
 };

@@ -5,12 +5,13 @@
 #define A_NUM 0
 #define B_NUM 1
 
-GameManager::GameManager(GameBoard* gameBoard)
+GameManager::GameManager(GameBoard* gameBoard, bool isQuiet)
 {
 	_playersNumActiveShips = { 0, 0 };
 	_playerScores = { 0, 0 };
 	_currentPlayer = A_NUM; //player A starts the game
 	_gameBoard = gameBoard;
+	_isQuiet = isQuiet;
 }
 
 int GameManager::getPlayerScore(int player) const
