@@ -4,13 +4,21 @@
 #define NUM_PLAYERS 2
 #define A_NUM 0
 #define B_NUM 1
+#define BOMB_COLOR 6 //brown
+#define BOMB_SYMBOL '@'
+#define HIT_COLOR 5 //magneta
+#define HIT_SYMBOL '*'
+#define EMPTY_CELL_COLOR 8 //gray
+#define EMPTY_CELL '_'
 
-GameManager::GameManager(GameBoard* gameBoard)
+GameManager::GameManager(GameBoard* gameBoard, bool isQuiet, int delay)
 {
 	_playersNumActiveShips = { 0, 0 };
 	_playerScores = { 0, 0 };
 	_currentPlayer = A_NUM; //player A starts the game
 	_gameBoard = gameBoard;
+	_isQuiet = isQuiet;
+	_delay = delay;
 }
 
 int GameManager::getPlayerScore(int player) const
@@ -36,16 +44,30 @@ int GameManager::getCurrentPlayer() const
 * Else, return Hit. */
 AttackResult GameManager::executeAttack(int attackedPlayerNum, pair<int, int> attack)
 {
+	if (!_isQuiet)
+	{ //bomp the point
+		_gameBoard->mark(attack.first, attack.second, BOMB_SYMBOL, BOMB_COLOR, _delay);
+	}
+
 	auto shipsMap = _gameBoard->getShipsMap();
 	auto found = shipsMap.find(attack);
 	if (found == shipsMap.end()) //attack point not in map --> Miss
 	{
 		//cout << "Miss" << endl;
 		_currentPlayer = attackedPlayerNum;
+		if (!_isQuiet)
+		{ //print the empty cell symbol
+			_gameBoard->mark(attack.first, attack.second, EMPTY_CELL, EMPTY_CELL_COLOR, _delay);
+		}
 		return AttackResult::Miss;
 	}
 	auto ship = found->second.first; //attack point is in map --> get the ship
 	auto shipWasHit = found->second.second;
+
+	if (!_isQuiet)
+	{ //from here in all cases print hit symbol
+		_gameBoard->mark(attack.first, attack.second, HIT_SYMBOL, HIT_COLOR, _delay);
+	}
 
 	if (shipWasHit == true) //Not the first hit on this specific cell (i,j)
 	{
@@ -116,9 +138,12 @@ void GameManager::gameOver(int winner) const
 	cout << "Player B: " << _playerScores.second << endl;
 }
 
-int GameManager:: runGame(IBattleshipGameAlgo* players[NUM_PLAYERS])
+int GameManager::runGame(IBattleshipGameAlgo* players[NUM_PLAYERS])
 {
-
+	if (!_isQuiet)
+	{
+		_gameBoard->draw();
+	}
 	// Each player declares his next attack.
 	// Then, his enemy executes the attack and returns the AttackResult.
 	// If the player hits an enemy's ship, he gets another turn

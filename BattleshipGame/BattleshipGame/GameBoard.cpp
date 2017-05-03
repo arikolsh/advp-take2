@@ -5,7 +5,8 @@
 #include <fstream>
 #include <vector>
 #include <windows.h>
-
+#include <chrono>
+#include <thread>
 #define ALLOC_ERR printf("Error: Allocation error\n")
 #define ADJ_SHIPS_ERR printf("Adjacent Ships on Board\n")
 #define TOO_FEW_SHIPS_ERR(j) printf("Too few ships for player %c\n",j)
@@ -14,8 +15,8 @@
 #define WRONG_PATH_ERR(p) printf("Wrong path: %s\n",p)
 #define MIN(a, b) ((a < b) ? (a) : (b))
 #define SUCCESS 0
-#define ERROR -1
-#define EMPTY_CELL ' '
+#define FAILURE -1
+#define EMPTY_CELL '_'
 #define HORIZONTAL 1
 #define VERTICAL 0
 #define SHIPS_FOR_PLAYER 5
@@ -30,6 +31,11 @@
 #define NUM_SHIP_TYPES 4
 #define A_NUM 0
 #define B_NUM 1
+#define BOARD_OFFSET 0 //offset of board gui
+/* gui helper methods */
+void gotoxy(int x, int y);
+WORD GetConsoleTextAttribute(HANDLE hCon);
+void hidecursor();
 
 /* class methods implementation */
 GameBoard::GameBoard(int rows, int cols)
@@ -50,11 +56,11 @@ int GameBoard::init(string path)
 	int err;
 	err = fillBoardFromFile(path);
 	if (err) {
-		return ERROR;
+		return FAILURE;
 	}
 	err = fillMapWithShips();
 	if (err) {
-		return ERROR;
+		return FAILURE;
 	}
 	return SUCCESS;
 }
@@ -126,6 +132,26 @@ char ** GameBoard::getPlayerBoard(int player) const
 	return playerBoard;
 }
 
+void GameBoard::draw() const
+{
+	hidecursor();
+	char cell;
+	map<char, int> colors;
+	colors[SUBMARINE] = 14; //yellow
+	colors[RUBBER_BOAT] = 1; //blue
+	colors[ROCKET_SHIP] = 2; //green
+	colors[DESTROYER] = 4; //red
+	colors[EMPTY_CELL] = 8; //gray
+	for (int i = 1; i < _rows - 2; i++)
+	{
+		for (int j = 1; j < _cols - 2; j++)
+		{
+			cell = _fullBoard[i][j];
+			mark(i - 1, j - 1, cell, colors[tolower(cell)] | FOREGROUND_INTENSITY , 20);
+		}
+	}
+}
+
 void GameBoard::printBoard(bool fullPrint) const
 {
 	int start, rowEnd, colEnd;
@@ -134,13 +160,7 @@ void GameBoard::printBoard(bool fullPrint) const
 	colEnd = fullPrint ? _cols : _cols - 2;
 	for (int i = start; i < rowEnd; i++) {
 		for (int j = start; j < colEnd; j++) {
-			if (_fullBoard[i][j] == ' ')
-			{
-				cout << EMPTY_CELL;
-			}
-			else {
-				cout << _fullBoard[i][j];
-			}
+			cout << _fullBoard[i][j];
 		}
 		cout << endl;
 	}
@@ -154,13 +174,7 @@ void GameBoard::printBoard(char ** board, int rows, int cols, bool fullPrint)
 	colEnd = fullPrint ? cols : cols - 2;
 	for (int i = start; i < rowEnd; i++) {
 		for (int j = start; j < colEnd; j++) {
-			if (board[i][j] == ' ')
-			{
-				cout << EMPTY_CELL;
-			}
-			else {
-				cout << board[i][j];
-			}
+			cout << board[i][j];
 		}
 		cout << endl;
 	}
@@ -174,13 +188,7 @@ void GameBoard::printBoard(vector<string> board, int rows, int cols, bool fullPr
 	colEnd = fullPrint ? cols : cols - 2;
 	for (int i = start; i < rowEnd; i++) {
 		for (int j = start; j < colEnd; j++) {
-			if (board[i][j] == ' ')
-			{
-				cout << EMPTY_CELL;
-			}
-			else {
-				cout << board[i][j];
-			}
+			cout << board[i][j];
 		}
 		cout << endl;
 	}
@@ -189,6 +197,35 @@ void GameBoard::printBoard(vector<string> board, int rows, int cols, bool fullPr
 map<pair<int, int>, pair<shared_ptr<Ship>, bool>> GameBoard::getShipsMap()
 {
 	return _shipsMap;
+}
+
+void GameBoard::mark(int i, int j, char c) const
+{
+	//move cursor to row i and col j
+	gotoxy(j + BOARD_OFFSET, i);
+	//print symbol
+	cout << c;
+	//move cursor to below the board
+	gotoxy(0, _cols);
+}
+
+void GameBoard::mark(int i, int j, char c, int color) const
+{
+	//get console handler
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	//get default colors
+	const int saved_colors = GetConsoleTextAttribute(hConsole);
+	//set color
+	SetConsoleTextAttribute(hConsole, color);
+	mark(i, j, c);
+	//return to default color
+	SetConsoleTextAttribute(hConsole, saved_colors);
+}
+
+void GameBoard::mark(int i, int j, char c, int color, int delay) const
+{
+	mark(i, j, c, color);
+	this_thread::sleep_for(chrono::milliseconds(delay));
 }
 
 void GameBoard::freeBoard(char ** board, int rows, int cols)
@@ -215,12 +252,12 @@ int GameBoard::fillBoardFromFile(string path)
 	ifstream file(path);
 	char **tmpBoard = getCleanBoard(true);
 	if (tmpBoard == nullptr) {
-		return ERROR;
+		return FAILURE;
 	}
 	if (!file.is_open()) {
 		cout << "Error: failed to open file " << path << endl;
 		freeBoard(tmpBoard, _rows, _cols);
-		return ERROR;
+		return FAILURE;
 	}
 	while (getline(file, line) && row <= _rows) {
 		m = MIN(_cols, line.length());
@@ -236,7 +273,7 @@ int GameBoard::fillBoardFromFile(string path)
 	freeBoard(tmpBoard, _rows, _cols);
 	err = validateBoard();
 	if (err) {
-		return ERROR;
+		return FAILURE;
 	}
 	return SUCCESS;
 }
@@ -386,7 +423,7 @@ int GameBoard::validateBoard() {
 		ADJ_SHIPS_ERR;
 		err = true;
 	}
-	return err ? ERROR : SUCCESS;
+	return err ? FAILURE : SUCCESS;
 }
 
 bool GameBoard::markInvalidShips(vector<string> boardCpy) {
@@ -516,4 +553,30 @@ bool GameBoard::markInvalidShips(vector<string> boardCpy) {
 	}
 
 	return err;
+}
+
+/* global helper methods */
+
+void gotoxy(int x, int y)
+{
+	COORD coord;
+	coord.X = x;
+	coord.Y = y;
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+}
+
+WORD GetConsoleTextAttribute(HANDLE hCon)
+{
+	CONSOLE_SCREEN_BUFFER_INFO con_info;
+	GetConsoleScreenBufferInfo(hCon, &con_info);
+	return con_info.wAttributes;
+}
+
+void hidecursor()
+{
+	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO info;
+	info.dwSize = 100;
+	info.bVisible = FALSE;
+	SetConsoleCursorInfo(consoleHandle, &info);
 }

@@ -12,8 +12,13 @@ public:
 	int init(string path);
 	vector<string> getFullBoard() const;
 	char** getPlayerBoard(int player) const;
+	/* draw the game board for gui purposes with padding */
+	void draw() const;
+	/* print board. if full print is true then print padding. */	
 	void printBoard(bool fullPrint) const;
 	map<pair<int, int>, pair<shared_ptr<Ship>, bool> > getShipsMap();
+	/* mark the i,j point on screen with the c symbol with color and delay. */
+	void mark(int i, int j, char c, int color, int delay) const;
 	static void freeBoard(char** board, int rows, int cols);
 	/* print external char 2d array. expect rows and cols to include padding. 
 	 * if full print is true then print padding. */
@@ -50,5 +55,9 @@ private:
 	* fillPlayerBoard gets the full board with both players ships,
 	* and fills the given player's board with his ships only. */
 	int fillMapWithShips();
+	/* mark the i,j point on screen with the c symbol. */
+	void mark(int i, int j, char c) const;
+	/* mark the i,j point on screen with the c symbol with color. */
+	void mark(int i, int j, char c, int color) const;
 };
 

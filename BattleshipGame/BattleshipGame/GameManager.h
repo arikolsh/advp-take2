@@ -4,7 +4,7 @@
 
 class GameManager{
 public:
-	explicit GameManager(GameBoard* gameBoard);
+	explicit GameManager(GameBoard* gameBoard, bool isQuiet, int delay);
 	int getPlayerScore(int player) const;
 	bool isPlayerDefeated(int player) const;
 	int getCurrentPlayer() const;
@@ -26,6 +26,10 @@ private:
 	pair<int, int> _playersNumActiveShips;
 	/*who is the next player to attack*/
 	int _currentPlayer;
+	/*true iff game is in quiet mode i.e. no gui*/
+	bool _isQuiet;
+	/*delay in milliseconds with each gui operation*/
+	int _delay;
 	/*return true if own goal*/
 	static bool isOwnGoal(int attackedPlayerNum, char shipType);
 };
