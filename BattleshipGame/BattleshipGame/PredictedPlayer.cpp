@@ -3,6 +3,9 @@
 #include <iostream>
 #include <algorithm>
 #include <sstream>
+#include <fstream>
+#include <vector>
+
 
 #define SHELL_RES 4096
 #define MODE "r"
@@ -28,16 +31,33 @@ PredictedPlayer::PredictedPlayer(int playerNum)
 //Destructor
 PredictedPlayer::~PredictedPlayer()
 {
-	//Do nothing for now
+	//Empty for now
 }
+
+void PredictedPlayer::setBoard(int player, const char** board, int numRows, int numCols)
+{
+}
+
+void PredictedPlayer::notifyOnAttackResult(int player, int row, int col, AttackResult result)
+{
+}
+
 
 /* Gets the input directory Path with all attack files
 * Updates the _attackFilePath to the relevant attack file if provided */
 bool PredictedPlayer::init(const std::string& path)
 {
 	SetAttackFilePath(_playerNum, path);
-	return _attackFilePath != EMPTY ? true : false;
+	if (_attackFilePath == EMPTY)
+	{
+		return false; // Failed to get an attack file
+	}
+
+	getAttacksFromFile(); // Fill _playerAttacks vector with all his attacks
+
+	return true;
 }
+
 
 void PredictedPlayer::SetAttackFilePath(int playerNum, const string& dirPath)
 {
@@ -58,21 +78,17 @@ void PredictedPlayer::SetAttackFilePath(int playerNum, const string& dirPath)
 
 std::pair<int, int> PredictedPlayer::attack()
 {
-	return _playerAttacks[++_attackPosition];
-}
-
-
-void PredictedPlayer::notifyOnAttackResult(int player, int row, int col, AttackResult result)
-{
-
+	if (++_attackPosition >= _playerAttacks.size())
+	{
+		return { -1,-1 }; // No more attacks
+	}
+	return _playerAttacks[_attackPosition];
 }
 
 
 //Get all legal attacks (pairs of valid ints) that exist in attackFile:
-/* This method reads the next attack point from the given attack file
-* and returns is as a pair <int, int>)
-* The functions checks if the current pair is valid and if not,
-* according to Guidelines, proceeds to the next line in the file */
+/* This method gets all the valid attack points from the given attack file
+* and inserts them to a vector of pair <int, int>) */
 void PredictedPlayer::getAttacksFromFile()
 {
 	pair<int, int> attack;
@@ -107,7 +123,11 @@ bool PredictedPlayer::IsValidAttack(pair<int, int> attack)
 	return attack.first != -1 && attack.second != -1;
 }
 
-
+/* This method gets a line from the attack file
+ * and tries to parse it into a valid attack point 
+ * that is returned as a pair <int, int>.
+ * If the line does not consist of a valid attack pair,
+ * {-1 , -1} is returned to sign an illegal attack */
 pair<int, int> PredictedPlayer::getAttackPair(string& line) const
 {
 	pair<int, int> attack = { -1,-1 };

@@ -5,10 +5,14 @@
 #include "GameBoard.h"
 #include "GameManager.h"
 #include <iostream>
-using namespace std;
+#include "PredictedPlayer.h"
+
+
 #define NUM_PLAYERS 2
 #define A_NUM 0
 #define B_NUM 1
+
+using namespace std;
 
 void getArgs(int argc, char** argv, bool& isQuiet, int& delay, string& searchDir)
 {
@@ -38,7 +42,7 @@ void getArgs(int argc, char** argv, bool& isQuiet, int& delay, string& searchDir
 
 int main(int argc, char* argv[])
 {
-	bool debug[]{ false,true,false };
+	bool debug[]{ true, false, false };
 
 	if (debug[0]) { //debug start
 		vector<string> inputFiles = { "", "", "" }; //[battle board, dll 1, dll 2]
@@ -47,6 +51,7 @@ int main(int argc, char* argv[])
 		bool isQuiet = false; //default
 		int delay = 500; //default, milliseconds
 		string searchDir = ""; //default
+		char **playerBoardA, **playerBoardB;
 
 		/* get command line arguments if any */
 		getArgs(argc, argv, isQuiet, delay, searchDir);
@@ -60,9 +65,9 @@ int main(int argc, char* argv[])
 		game_board.init(inputFiles[0].c_str());
 
 		/* get player boards */
-		char** playerBoardA = game_board.getPlayerBoard(A_NUM);
+		playerBoardA = game_board.getPlayerBoard(A_NUM);
 		if (playerBoardA == nullptr) { return EXIT_FAILURE; }
-		char** playerBoardB = game_board.getPlayerBoard(B_NUM);
+		playerBoardB = game_board.getPlayerBoard(B_NUM);
 		if (playerBoardB == nullptr)
 		{
 			GameBoard::freeBoard(playerBoardA, 12, 12);
@@ -70,31 +75,38 @@ int main(int argc, char* argv[])
 		}
 
 		/* init game manager */
-		GameManager manager(&game_board, isQuiet, delay);
+		GameManager manager(&game_board, isQuiet, delay); //Ofek: this can be changed to pass by ref
 
 		/* declare players */
-		IBattleshipGameAlgo * players[NUM_PLAYERS];
+		IBattleshipGameAlgo* players[NUM_PLAYERS];
 
 		//todo: get algorithms
+
 		/* init player A */
-		players[A_NUM]; // = new PredictedPlayer(); //=GetAlgorithm();
-		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), 12, 12);
-		if (players[A_NUM]->init(searchDir))
+		players[A_NUM] = new PredictedPlayer(A_NUM);
+		if (players[A_NUM]->init(searchDir) == false)
 		{
-			GameBoard::freeBoard(playerBoardA, 12, 12);
+			GameBoard::freeBoard(playerBoardA, 12, 12);  // fix to 10,10 !!
 			GameBoard::freeBoard(playerBoardB, 12, 12);
+
+			//delete player A!
+
 			return EXIT_FAILURE;
 		}
-		GameBoard::freeBoard(playerBoardA, 12, 12);
+		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), 12, 12); //should send 10,10 since the Bodek will call setboard with (10,10)..
+		GameBoard::freeBoard(playerBoardA, 12, 12); //Not needed once A set his own board
 
 		/* init player B */
-		players[B_NUM]; // = new PredictedPlayer(); //=GetAlgorithm();
-		players[B_NUM]->setBoard(B_NUM, const_cast<const char **>(playerBoardB), 12, 12);
-		if (players[B_NUM]->init(searchDir))
+		players[B_NUM] = new PredictedPlayer(B_NUM);
+		if (players[B_NUM]->init(searchDir) == false)
 		{
 			GameBoard::freeBoard(playerBoardB, 12, 12);
+
+			//delete player A and B!
+
 			return EXIT_FAILURE;
 		}
+		players[B_NUM]->setBoard(B_NUM, const_cast<const char **>(playerBoardB), 12, 12); //should send 10,10 since the Bodek will call setboard with (10,10)..
 		GameBoard::freeBoard(playerBoardB, 12, 12);
 
 		/* game execution */
@@ -132,6 +144,6 @@ int main(int argc, char* argv[])
 		//GameBoard::printBoard(playerBoardA,12,12,false);
 		game_board.draw();
 	}
-	return EXIT_SUCCESS;
 
+	return EXIT_SUCCESS;
 }
