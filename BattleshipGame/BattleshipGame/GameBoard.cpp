@@ -56,7 +56,6 @@ int GameBoard::init(string path)
 	if (err) {
 		return ERROR;
 	}
-	printBoard(true);
 	return SUCCESS;
 }
 
@@ -143,7 +142,47 @@ void GameBoard::printBoard(bool fullPrint) const
 				cout << _fullBoard[i][j];
 			}
 		}
-		cout<<endl;
+		cout << endl;
+	}
+}
+
+void GameBoard::printBoard(char ** board, int rows, int cols, bool fullPrint)
+{
+	int start, rowEnd, colEnd;
+	start = fullPrint ? 0 : 1;
+	rowEnd = fullPrint ? rows : rows - 2;
+	colEnd = fullPrint ? cols : cols - 2;
+	for (int i = start; i < rowEnd; i++) {
+		for (int j = start; j < colEnd; j++) {
+			if (board[i][j] == ' ')
+			{
+				cout << EMPTY_CELL;
+			}
+			else {
+				cout << board[i][j];
+			}
+		}
+		cout << endl;
+	}
+}
+
+void GameBoard::printBoard(vector<string> board, int rows, int cols, bool fullPrint)
+{
+	int start, rowEnd, colEnd;
+	start = fullPrint ? 0 : 1;
+	rowEnd = fullPrint ? rows : rows - 2;
+	colEnd = fullPrint ? cols : cols - 2;
+	for (int i = start; i < rowEnd; i++) {
+		for (int j = start; j < colEnd; j++) {
+			if (board[i][j] == ' ')
+			{
+				cout << EMPTY_CELL;
+			}
+			else {
+				cout << board[i][j];
+			}
+		}
+		cout << endl;
 	}
 }
 
