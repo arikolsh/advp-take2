@@ -12,15 +12,20 @@ public:
 	int init(string path);
 	vector<string> getFullBoard() const;
 	char** getPlayerBoard(int player) const;
+	/* draw the game board for gui purposes with padding */
+	void draw() const;
+	/* print board. if full print is true then print padding. */
 	void printBoard(bool fullPrint) const;
 	map<pair<int, int>, pair<shared_ptr<Ship>, bool> > getShipsMap();
+	/* mark the i,j point on screen with the c symbol with color and delay. */
+	void mark(int i, int j, char c, int color, int delay) const;
 	static void freeBoard(char** board, int rows, int cols);
-	/* print external char 2d array. expect rows and cols to include padding. 
-	 * if full print is true then print padding. */
+	/* print external char 2d array. expect rows and cols to include padding.
+	* if full print is true then print padding. */
 	static void printBoard(char** board, int rows, int cols, bool fullPrint);
 	/* print external vector of strings. expect rows and cols to include padding.
 	* if full print is true then print padding. */
-	static void printBoard(vector<string> board, int rows, int cols,bool fullPrint);
+	static void printBoard(vector<string> board, int rows, int cols, bool fullPrint);
 
 private:
 	int _rows;
@@ -37,7 +42,7 @@ private:
 	/* fill fullBoard with empty cell symbol. */
 	void cleanBoard(char** board) const;
 	/* return 2d char array. return null ptr if error. */
-	char** getCleanBoard(bool clean) const;
+	char** getCleanBoard(bool clean, bool padding) const;
 	/* fill board with data from board file in path. */
 	int fillBoardFromFile(string path);
 	/* check if board is valid and return 0 if so. return -1 if invalid and
@@ -50,5 +55,9 @@ private:
 	* fillPlayerBoard gets the full board with both players ships,
 	* and fills the given player's board with his ships only. */
 	int fillMapWithShips();
+	/* mark the i,j point on screen with the c symbol. */
+	void mark(int i, int j, char c) const;
+	/* mark the i,j point on screen with the c symbol with color. */
+	void mark(int i, int j, char c, int color) const;
 };
 

@@ -15,7 +15,7 @@ public:
 	* pos0 = battle board
 	* pos1 = a attack board
 	* pos2 = b attack board	*/
-	static int getInputFiles(vector<string>& inputFiles, vector<string>& messages, vector<string>& DLLNames, int argc, string searchDir);
+	static int getInputFiles(vector<string>& inputFiles, vector<string>& messages, vector<string>& DLLNames, string searchDir);
 	/* print 2d char array for debug purposes */
 	static void print2DCharArray(char**arr, int rows, int cols);
 
