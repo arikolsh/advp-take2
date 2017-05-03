@@ -77,11 +77,12 @@ int main(int argc, char* argv[])
 		/* init game board data structure */
 		GameBoard game_board(10, 10);
 		game_board.init(inputFiles[0].c_str());
-		game_board.printBoard(false);
+		//game_board.printBoard(true);
 		/* get player boards */
 		char** playerBoardA = game_board.getPlayerBoard(A_NUM);
 		if (playerBoardA == nullptr) { return EXIT_FAILURE; }
-		GameBoard::printBoard(playerBoardA,12,12,false);
+		//GameBoard::printBoard(playerBoardA,12,12,false);
+		game_board.draw();
 	}
 	return EXIT_SUCCESS;
 

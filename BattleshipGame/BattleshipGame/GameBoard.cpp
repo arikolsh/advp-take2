@@ -30,6 +30,9 @@
 #define NUM_SHIP_TYPES 4
 #define A_NUM 0
 #define B_NUM 1
+/* gui helper methods */
+void gotoxy(int x, int y);
+WORD GetConsoleTextAttribute(HANDLE hCon);
 
 /* class methods implementation */
 GameBoard::GameBoard(int rows, int cols)
@@ -126,6 +129,27 @@ char ** GameBoard::getPlayerBoard(int player) const
 	return playerBoard;
 }
 
+void GameBoard::draw() const
+{
+	//print padding
+	int currNum = 1;
+	for (int i = 1; i < _rows - 1; i++)
+	{
+		mark(i, 0, currNum / 10 + '0');
+		mark(i, 1, currNum % 10 + '0');
+		mark(i, 2, '|');
+		currNum ++ ;
+	}
+	currNum = 1;
+	for (int i = 3; i < 3 * _cols -3; i += 3)
+	{
+		mark(0, i, currNum / 10 + '0');
+		mark(0, i + 1, currNum % 10 + '0');
+		mark(0, i + 2, '|');
+		currNum++;
+	}
+}
+
 void GameBoard::printBoard(bool fullPrint) const
 {
 	int start, rowEnd, colEnd;
@@ -134,13 +158,7 @@ void GameBoard::printBoard(bool fullPrint) const
 	colEnd = fullPrint ? _cols : _cols - 2;
 	for (int i = start; i < rowEnd; i++) {
 		for (int j = start; j < colEnd; j++) {
-			if (_fullBoard[i][j] == ' ')
-			{
-				cout << EMPTY_CELL;
-			}
-			else {
-				cout << _fullBoard[i][j];
-			}
+			cout << _fullBoard[i][j];
 		}
 		cout << endl;
 	}
@@ -154,13 +172,7 @@ void GameBoard::printBoard(char ** board, int rows, int cols, bool fullPrint)
 	colEnd = fullPrint ? cols : cols - 2;
 	for (int i = start; i < rowEnd; i++) {
 		for (int j = start; j < colEnd; j++) {
-			if (board[i][j] == ' ')
-			{
-				cout << EMPTY_CELL;
-			}
-			else {
-				cout << board[i][j];
-			}
+			cout << board[i][j];
 		}
 		cout << endl;
 	}
@@ -174,13 +186,7 @@ void GameBoard::printBoard(vector<string> board, int rows, int cols, bool fullPr
 	colEnd = fullPrint ? cols : cols - 2;
 	for (int i = start; i < rowEnd; i++) {
 		for (int j = start; j < colEnd; j++) {
-			if (board[i][j] == ' ')
-			{
-				cout << EMPTY_CELL;
-			}
-			else {
-				cout << board[i][j];
-			}
+			cout << board[i][j];
 		}
 		cout << endl;
 	}
@@ -189,6 +195,16 @@ void GameBoard::printBoard(vector<string> board, int rows, int cols, bool fullPr
 map<pair<int, int>, pair<shared_ptr<Ship>, bool>> GameBoard::getShipsMap()
 {
 	return _shipsMap;
+}
+
+void GameBoard::mark(int i, int j, char c) const
+{
+	//move cursor to row i and col j
+	gotoxy(j, i);
+	//print symbol
+	cout << c;
+	//move cursor to below the board
+	gotoxy(0, _cols);
 }
 
 void GameBoard::freeBoard(char ** board, int rows, int cols)
@@ -516,4 +532,21 @@ bool GameBoard::markInvalidShips(vector<string> boardCpy) {
 	}
 
 	return err;
+}
+
+/* global helper methods */
+
+void gotoxy(int x, int y)
+{
+	COORD coord;
+	coord.X = x;
+	coord.Y = y;
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+}
+
+WORD GetConsoleTextAttribute(HANDLE hCon)
+{
+	CONSOLE_SCREEN_BUFFER_INFO con_info;
+	GetConsoleScreenBufferInfo(hCon, &con_info);
+	return con_info.wAttributes;
 }
