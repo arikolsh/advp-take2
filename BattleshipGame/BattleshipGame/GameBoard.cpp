@@ -31,10 +31,11 @@
 #define NUM_SHIP_TYPES 4
 #define A_NUM 0
 #define B_NUM 1
-#define BOARD_OFFSET 60 //offset of board gui
+#define BOARD_OFFSET 0 //offset of board gui
 /* gui helper methods */
 void gotoxy(int x, int y);
 WORD GetConsoleTextAttribute(HANDLE hCon);
+void hidecursor();
 
 /* class methods implementation */
 GameBoard::GameBoard(int rows, int cols)
@@ -133,6 +134,7 @@ char ** GameBoard::getPlayerBoard(int player) const
 
 void GameBoard::draw() const
 {
+	hidecursor();
 	char cell;
 	map<char, int> colors;
 	colors[SUBMARINE] = 14; //yellow
@@ -145,7 +147,7 @@ void GameBoard::draw() const
 		for (int j = 1; j < _cols - 2; j++)
 		{
 			cell = _fullBoard[i][j];
-			mark(i - 1, j - 1, cell, colors[tolower(cell)] | FOREGROUND_INTENSITY);
+			mark(i - 1, j - 1, cell, colors[tolower(cell)] | FOREGROUND_INTENSITY , 20);
 		}
 	}
 }
@@ -204,7 +206,7 @@ void GameBoard::mark(int i, int j, char c) const
 	//print symbol
 	cout << c;
 	//move cursor to below the board
-	gotoxy(0, 0);
+	gotoxy(0, _cols);
 }
 
 void GameBoard::mark(int i, int j, char c, int color) const
@@ -568,4 +570,13 @@ WORD GetConsoleTextAttribute(HANDLE hCon)
 	CONSOLE_SCREEN_BUFFER_INFO con_info;
 	GetConsoleScreenBufferInfo(hCon, &con_info);
 	return con_info.wAttributes;
+}
+
+void hidecursor()
+{
+	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO info;
+	info.dwSize = 100;
+	info.bVisible = FALSE;
+	SetConsoleCursorInfo(consoleHandle, &info);
 }
