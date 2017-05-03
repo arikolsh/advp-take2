@@ -74,9 +74,11 @@ void GameBoard::cleanBoard(char** board) const
 	}
 }
 
-char** GameBoard::getCleanBoard(bool clean) const
+char** GameBoard::getCleanBoard(bool clean, bool padding) const
 {
-	char** board = static_cast<char**>(malloc(_rows * sizeof(char*)));
+	int rows = padding ? _rows : _rows - 2;
+	int cols = padding ? _cols : _cols - 2;
+	char** board = static_cast<char**>(malloc(rows * sizeof(char*)));
 	if (board == nullptr)
 	{
 		ALLOC_ERR;
@@ -85,7 +87,7 @@ char** GameBoard::getCleanBoard(bool clean) const
 
 	for (int i = 0; i < _rows; i++)
 	{
-		board[i] = static_cast<char*>(malloc(_cols * sizeof(char)));
+		board[i] = static_cast<char*>(malloc(cols * sizeof(char)));
 		if (board[i] == nullptr)
 		{
 			ALLOC_ERR;
@@ -113,14 +115,14 @@ char ** GameBoard::getPlayerBoard(int player) const
 	// player is A => decider is false => will only insert upper case chars
 	// player is B => decider is true => will only insert lower case chars 
 	bool decider = player == A_NUM ? false : true;
-	char** playerBoard = getCleanBoard(true);
+	char** playerBoard = getCleanBoard(true, false);
 	if (playerBoard == nullptr)
 	{
 		return nullptr;
 	}
-	for (int i = 0; i < _rows; i++)
+	for (int i = 1; i < _rows - 2; i++)
 	{
-		for (int j = 0; j < _cols; j++)
+		for (int j = 1; j < _cols - 2; j++)
 		{
 			c = _fullBoard[i][j];
 			if (c == EMPTY_CELL) { continue; }
@@ -147,7 +149,7 @@ void GameBoard::draw() const
 		for (int j = 1; j < _cols - 2; j++)
 		{
 			cell = _fullBoard[i][j];
-			mark(i - 1, j - 1, cell, colors[tolower(cell)] | FOREGROUND_INTENSITY , 20);
+			mark(i - 1, j - 1, cell, colors[tolower(cell)] | FOREGROUND_INTENSITY, 20);
 		}
 	}
 }
@@ -247,10 +249,9 @@ void GameBoard::freeBoard(char ** board, int rows, int cols)
 int GameBoard::fillBoardFromFile(string path)
 {
 	string line;
-	int row = 1, err;
-	size_t m;
+	int row = 1, err,m;
 	ifstream file(path);
-	char **tmpBoard = getCleanBoard(true);
+	char **tmpBoard = getCleanBoard(true, true);
 	if (tmpBoard == nullptr) {
 		return FAILURE;
 	}
@@ -260,7 +261,7 @@ int GameBoard::fillBoardFromFile(string path)
 		return FAILURE;
 	}
 	while (getline(file, line) && row <= _rows) {
-		m = MIN(_cols, line.length());
+		m = static_cast<int>(MIN(_cols, (int)line.length()));
 		for (int i = 1; i <= m; i++) { //1,2,3,4,5,6,7,8,9,10
 			if (Ship::isShip(line[i - 1])) { //check if valid ship char
 				tmpBoard[row][i] = line[i - 1];
