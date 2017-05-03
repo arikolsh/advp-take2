@@ -27,6 +27,9 @@ public:
 
 	void notifyOnAttackResult(int player, int row, int col, AttackResult result) override;	// notify on last move result
 
+	static void TEST_PLAYER();
+
+
 private:
 
 	// Private fields:
@@ -35,7 +38,11 @@ private:
 	pair<int, int> _attackPosition; //Position in board
 	int _attackIndex; //Next attack index in _playerAttacks vector
 	vector<string> _board; //Holds all player's ships + 'x' mark for every cell that shouldn't be attacked
-	
+	int _rows, _cols;
+
 	// Private functions:
+	void copyBoard(const char** board);
+	void SmartPlayer::markPotentialHits();
 	bool potentialHit(int row, int col); //check if the cell is empty and in addition check :down, up, left, right, upper left, upper right, down left, down right
+	void SmartPlayer::printBoard(bool fullPrint) const;
 };

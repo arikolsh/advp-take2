@@ -5,7 +5,10 @@
 #include "GameBoard.h"
 #include "GameManager.h"
 #include <iostream>
+
+
 #include "PredictedPlayer.h"
+#include "SmartPlayer.h"
 
 
 #define NUM_PLAYERS 2
@@ -42,6 +45,9 @@ void getArgs(int argc, char** argv, bool& isQuiet, int& delay, string& searchDir
 
 int main(int argc, char* argv[])
 {
+	SmartPlayer::TEST_PLAYER();
+	return 0;
+
 	bool debug[]{ true, false, false };
 
 	if (debug[0]) { //debug start
