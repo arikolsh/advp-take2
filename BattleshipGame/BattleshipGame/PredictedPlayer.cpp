@@ -22,10 +22,6 @@ PredictedPlayer::PredictedPlayer(int playerNum)
 	_playerNum = playerNum;
 	_attackFilePath = EMPTY;
 	_playerAttacks = {};
-
-	_sharingAttacks = false;
-	//TODO think of how to recognize that the other player is also predicted???
-
 	_attackPosition = 0;
 }
 
@@ -62,18 +58,13 @@ void PredictedPlayer::SetAttackFilePath(int playerNum, const string& dirPath)
 
 std::pair<int, int> PredictedPlayer::attack()
 {
-	return _playerAttacks[_attackPosition];
+	return _playerAttacks[++_attackPosition];
 }
 
 
 void PredictedPlayer::notifyOnAttackResult(int player, int row, int col, AttackResult result)
 {
-	/* If this player is the one that attacked, or the 2 players are
-	* sharing a single attack file, We increment the _attackPosition */
-	if (player == _playerNum || _sharingAttacks == true)
-	{
-		_attackPosition++;
-	}
+
 }
 
 
@@ -86,16 +77,17 @@ void PredictedPlayer::getAttacksFromFile()
 {
 	pair<int, int> attack;
 	string line;
+	ifstream attackFile; //The file with all attacks to be executed
 
-	_attackFile.open(_attackFilePath);
-	if (!_attackFile.is_open())
+	attackFile.open(_attackFilePath);
+	if (!attackFile.is_open())
 	{
 		cout << "Error: failed to open player attack file" << endl;
 		return;
 	}
 
 	// Read entire attack file and insert all legal attacks to a vector
-	while (getline(_attackFile, line)) //checked: getline catch \r\n and \n.
+	while (getline(attackFile, line)) //checked: getline catch \r\n and \n.
 	{
 		attack = getAttackPair(line);
 		if (!IsValidAttack(attack))
@@ -106,7 +98,7 @@ void PredictedPlayer::getAttacksFromFile()
 		_playerAttacks.push_back(attack);
 	}
 	//Finished inserting all attacks into _playerAttacks vector:
-	_attackFile.close();
+	attackFile.close();
 }
 
 

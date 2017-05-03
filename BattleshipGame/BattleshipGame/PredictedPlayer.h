@@ -29,9 +29,7 @@ private:
 
 	int _playerNum;
 	string _attackFilePath; //The input filePath with all attacks to be executed
-	ifstream _attackFile; //The file with all attacks to be executed
 	vector<pair <int, int>> _playerAttacks; //A vector with all player attacks
-	bool _sharingAttacks; //Indicates the case of 2 players sharing 1 attack file
 	int _attackPosition; //Next attack index in _playerAttacks vector
 
 	void getAttacksFromFile();
