@@ -17,7 +17,7 @@
 #define WORKING_DIR "Working Directory"
 #define EMPTY_CELL ' '
 #define SUCCESS 0
-#define ERROR -1
+#define FAILURE -1
 #define FULL_BOARD_LEN 12
 #define DLLS_AMOUNT 2
 #define FIRST 0
@@ -30,19 +30,18 @@
 
 
 
-int GameUtils::getInputFiles(vector<string> & inputFiles, vector<string> & messages, vector<string> & DLLNames, int argc, char *argv[])
+int GameUtils::getInputFiles(vector<string> & inputFiles, vector<string> & messages, vector<string> & DLLNames, string searchDir)
 {
-	string searchDir = argc == 1 ? "" : argv[1];
 	int op_res = fetchInputFiles(inputFiles, messages, DLLNames, searchDir);
 	if (op_res == 1)
 	{
 		cout << "Error: failed to fetch input files from super-file container" << endl;
-		return ERROR;
+		return FAILURE;
 	}
 	if (messages.size() != 0)
 	{
 		showMessages(messages);
-		return ERROR;
+		return FAILURE;
 	}
 	return SUCCESS;
 }
@@ -74,12 +73,12 @@ void GameUtils::showMessages(vector<string> messages)
 int GameUtils::execCmd(char const * cmd, string & shellRes)
 {
 	FILE * pPipe;
-	int execRes = ERROR, exitCode = 0;
+	int execRes = FAILURE, exitCode = 0;
 	char shellTmpRes[SHELL_RES] = { 0 };
 	pPipe = _popen(cmd, MODE);
 	if (pPipe == NULL)	//if an error occured
 	{
-		return ERROR;
+		return FAILURE;
 	}
 	while (fgets(shellTmpRes, sizeof(shellTmpRes), pPipe))
 	{
@@ -107,9 +106,9 @@ int GameUtils::fetchInputFiles(vector<string> & inputFiles, vector<string> & mes
 		missingBoardFile << MISSING_BOARD_FILE << WORKING_DIR << endl;
 		missingDLL << MISSING_DLL << WORKING_DIR << endl;
 		opRes = execCmd(SEARCH_DEFAULT_CMD, shellRes);
-		if (ERROR == opRes)
+		if (FAILURE == opRes)
 		{
-			return ERROR;
+			return FAILURE;
 		}
 		if (1 == opRes)
 		{
@@ -133,9 +132,9 @@ int GameUtils::fetchInputFiles(vector<string> & inputFiles, vector<string> & mes
 		s_search_cmd = tmpSearchCmd.str();
 		searchCmd = s_search_cmd.c_str();
 		opRes = execCmd(searchCmd, shellRes);
-		if (ERROR == opRes)
+		if (FAILURE == opRes)
 		{
-			return ERROR;
+			return FAILURE;
 		}
 		if (1 == opRes)
 		{
@@ -146,9 +145,9 @@ int GameUtils::fetchInputFiles(vector<string> & inputFiles, vector<string> & mes
 			s_search_cmd = tmpSearchCmd.str();
 			searchCmd = s_search_cmd.c_str();
 			opRes = execCmd(searchCmd, shellRes);
-			if (ERROR == opRes)
+			if (FAILURE == opRes)
 			{
-				return ERROR;
+				return FAILURE;
 			}
 			if (1 == opRes)
 			{

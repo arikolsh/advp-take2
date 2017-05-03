@@ -1,192 +1,137 @@
 #include <cstdlib>
-#include <iostream>
 #include "GameUtils.h"
-#include "Player.h"
 #include <vector>
 #include <filesystem>
-#include "GameBoardManager.h"
-#define SUCCESS 0
-#define ERROR -1
+#include "GameBoard.h"
+#include "GameManager.h"
+#include <iostream>
 using namespace std;
-#define MAX_PATH 1024
 #define NUM_PLAYERS 2
-#define OPPONENT(i) (1 - i)
-#define PLAYER(i) ((i==0) ? "A" : "B")
 #define A_NUM 0
 #define B_NUM 1
-void GameOver(int winner, Player*(players)[2]);
 
+void getArgs(int argc, char** argv, bool& isQuiet, int& delay, string& searchDir)
+{
+	vector<string> argsVector(argv, argv + argc);
+	for (int i = 1; i < argc; i++)
+	{
+
+		if (argsVector[i] == "-quiet")
+		{
+			isQuiet = true;
+		}
+		else if (argsVector[i] == "-delay")
+		{
+			delay = stoi(argsVector[++i]);
+		}
+		else
+		{
+			searchDir = argsVector[i];
+			cout << searchDir;
+		}
+	}
+	if(isQuiet)
+	{
+		delay = 0;
+	}
+}
 
 int main(int argc, char* argv[])
 {
+	bool debug[]{ false,true,false };
 
-	////////////// FLOW //////////////
+	if (debug[0]) { //debug start
+		vector<string> inputFiles = { "", "", "" }; //[battle board, dll 1, dll 2]
+		vector<string> dllNames = { "", "" };
+		vector<string> messages;
+		bool isQuiet = false; //default
+		int delay = 500; //default, milliseconds
+		string searchDir = ""; //default
 
-	//GET INPUT FILES: DLL, BOARD //done
+		/* get command line arguments if any */
+		getArgs(argc, argv, isQuiet, delay, searchDir);
 
-	//INIT GAME_BOARD INSTANCE//done
+		/* get DLLs and board file */
+		int err = GameUtils::getInputFiles(inputFiles, messages, dllNames, searchDir);
+		if (err) { return EXIT_FAILURE; }
 
-	//DECLARE PLAYERS, INIT PLAYERS ARRAY
+		/* init game board data structure */
+		GameBoard game_board(10, 10);
+		game_board.init(inputFiles[0].c_str());
 
-	//GET ALGORITHMS
+		/* get player boards */
+		char** playerBoardA = game_board.getPlayerBoard(A_NUM);
+		if (playerBoardA == nullptr) { return EXIT_FAILURE; }
+		char** playerBoardB = game_board.getPlayerBoard(B_NUM);
+		if (playerBoardB == nullptr)
+		{
+			GameBoard::freeBoard(playerBoardA, 12, 12);
+			return EXIT_FAILURE;
+		}
 
-	//GET PLAYER BOARD A
+		/* init game manager */
+		GameManager manager(&game_board, isQuiet, delay);
 
-	//GET PLAYER BOARD B
+		/* declare players */
+		IBattleshipGameAlgo * players[NUM_PLAYERS];
 
-	//SETBOARD() IN EACH PLAYER
+		//todo: get algorithms
+		/* init player A */
+		players[A_NUM]; // = new PredictedPlayer(); //=GetAlgorithm();
+		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), 12, 12);
+		if (players[A_NUM]->init(searchDir))
+		{
+			GameBoard::freeBoard(playerBoardA, 12, 12);
+			GameBoard::freeBoard(playerBoardB, 12, 12);
+			return EXIT_FAILURE;
+		}
+		GameBoard::freeBoard(playerBoardA, 12, 12);
 
-	//INIT() PLAYERS -> IF PREDICTED FIND IN PATH ATTACK FILES //todo: brainstorm how to handle only one attack file
+		/* init player B */
+		players[B_NUM]; // = new PredictedPlayer(); //=GetAlgorithm();
+		players[B_NUM]->setBoard(B_NUM, const_cast<const char **>(playerBoardB), 12, 12);
+		if (players[B_NUM]->init(searchDir))
+		{
+			GameBoard::freeBoard(playerBoardB, 12, 12);
+			return EXIT_FAILURE;
+		}
+		GameBoard::freeBoard(playerBoardB, 12, 12);
 
-	//START GAME ITERATIONS
+		/* game execution */
+		int winner = manager.runGame(players);
 
-	////////////// END OF FLOW //////////////
+		/* output results */
+		manager.gameOver(winner);
 
-	//Variables to be used:
-	//int err, i, winner = -1;
-	//Player* players[2];
-	//pair<int, int> attackPoint;
-	//pair <AttackResult, int> attackResultAndScore, ownGoalResultAndScore;
-	//char boards[3][FULL_BOARD_LEN][FULL_BOARD_LEN]; /* [playerA's board, playerB's board, full board]  */
+		/* freeing resources */
+		delete players[A_NUM];
+		delete players[B_NUM];
+	} //debug end
 
-	vector<string> inputFiles = { "", "", "" }; //[battle board, dll 1, dll 2]
-	vector<string> dllNames = { "", "" };
-	vector<string> messages;
-
-	//Prepare the game:
-	int err = GameUtils::getInputFiles(inputFiles, messages, dllNames, argc, argv);
-	if (err == ERROR)
+	if (debug[1])
 	{
-		return EXIT_FAILURE;
+		bool isQuiet = false; //default
+		int delay = 500; //default, milliseconds
+		string searchDir = ""; //default
+		getArgs(argc, argv, isQuiet, delay, searchDir);
+		vector<string> inputFiles = { "", "", "" }; //[battle board, dll 1, dll 2]
+		vector<string> dllNames = { "", "" };
+		vector<string> messages;
+													 /* get DLLs and board file */
+		int err = GameUtils::getInputFiles(inputFiles, messages, dllNames, searchDir);
+		if (err) { return EXIT_FAILURE; }
+
+		/* init game board data structure */
+		GameBoard game_board(10, 10);
+		game_board.init(inputFiles[0].c_str());
+		//game_board.printBoard(true);
+
+		/* get player boards */
+		char** playerBoardA = game_board.getPlayerBoard(A_NUM);
+		if (playerBoardA == nullptr) { return EXIT_FAILURE; }
+		//GameBoard::printBoard(playerBoardA,12,12,false);
+		game_board.draw();
 	}
-	GameBoardManager game_board_manager(10, 10);
-	game_board_manager.init(inputFiles[0].c_str());
-	char** playerBoardA = game_board_manager.getPlayerBoard(A_NUM);
-	if (playerBoardA == nullptr)
-	{
-		return EXIT_FAILURE;
-	}
-	char** playerBoardB = game_board_manager.getPlayerBoard(B_NUM);
-	if (playerBoardB == nullptr)
-	{
-		GameBoardManager::freeBoard(playerBoardA,12,12);
-		return EXIT_FAILURE;
-	}
-	///todo: getPlayerBoards
-	//todo: players declare
-	//todo: get algorithms
-	//todo: players setboard() and init()
-	GameBoardManager::freeBoard(playerBoardA, 12, 12);
-	GameBoardManager::freeBoard(playerBoardB, 12, 12);
-	//todo: start iterations
-
-	////Initialize player A and player B:
-	//for (i = 0; i < 2; i++)
-	//{
-	//	players[i] = new Player(i, inputFiles[i+1].c_str());
-	//	//GameUtils::fillPlayerBoard(i, boards[i], boards[2]);
-	//	players[i]->setBoard(boards[i], FULL_BOARD_LEN, FULL_BOARD_LEN);
-	//}
-
-	///*Start the Game with playerA.
-	//* Each player declares his next attack.
-	//* Then, his enemy executes the attack and returns the AttackResult.
-	//* If the player hits an enemy's ship, he gets another turn!
-	//* If it's a 'Miss' the game checks for an 'own goal'.
-	//* Game is over once a player loses all his ships, or all attackes were taken.*/
-	//i = 0;
-	//while (true)
-	//{		
-	//	//Player declares his next attack:
-	//	attackPoint = players[i]->attack();
-	//	
-	//	//Check if player executed all attacks, If so, Game over (only scores are printed):
-	//	if (players[i]->finishedAttacks() || attackPoint.first == -1 )
-	//	{
-	//		if (players[OPPONENT(i)]->finishedAttacks())
-	//		{
-	//			break; //Both players finished their attack files --> Game Over
-	//		}
-	//		//otherwise, pass turn to opponent:
-	//		i = OPPONENT(i); 
-	//		continue; 
-	//	}
-
-	//	//Executes the player's attack on the opponent's board:
-	//	attackResultAndScore = players[OPPONENT(i)]->execute(attackPoint);
-	//	
-	//	//Update score in case of a 'Sink' result:
-	//	//(Incremented only if score > 0)
-	//	players[i]->incrementPlayerScore(attackResultAndScore.second);
-
-	//	//check for an 'own goal': in case of a miss on the opponents board, 
-	//	//we check for a self hit on the attacker's board:
-	//	if(attackResultAndScore.first == AttackResult::Miss)
-	//	{
-	//		ownGoalResultAndScore = players[i]->execute(attackPoint);
-	//		if (ownGoalResultAndScore.first != AttackResult::Miss) //It's an own goal..
-	//		{
-	//			//In case of a 'Sink' increment the opponents score:
-	//			players[OPPONENT(i)]->incrementPlayerScore(ownGoalResultAndScore.second);
-	//			//Notify both players on Attack Result 
-	//			//(own goal is considered as if the opponent attacked):
-	//			players[i]->notifyOnAttackResult(OPPONENT(i), attackPoint.first, attackPoint.second, ownGoalResultAndScore.first);
-	//			players[OPPONENT(i)]->notifyOnAttackResult(OPPONENT(i), attackPoint.first, attackPoint.second, ownGoalResultAndScore.first);
-	//			//If all the player's ships are destroyed it's GameOver (by own goal):
-	//			if (players[i]->isDefeated())
-	//			{
-	//				winner = OPPONENT(i); //Opponent wins :(
-	//				break;
-	//			}
-	//		}
-	//		i = OPPONENT(i);
-	//		continue;
-	//	}
-	//	
-	//	//Notify both players on Attack Result:
-	//	players[i]->notifyOnAttackResult(i, attackPoint.first, attackPoint.second, attackResultAndScore.first);
-	//	players[OPPONENT(i)]->notifyOnAttackResult(i, attackPoint.first, attackPoint.second, attackResultAndScore.first);
-	//	
-	//	//If all enemy's ships were destroyed it's GameOver:
-	//	if (players[OPPONENT(i)]->isDefeated())
-	//	{
-	//		winner = i;
-	//		break;
-	//	}
-
-	//	//If "Sink' or 'Hit' (for the first time) --> Current player gets another turn:
-	//	if ( (attackResultAndScore.first == AttackResult::Hit 
-	//		|| attackResultAndScore.first == AttackResult::Sink) 
-	//		&& attackResultAndScore.second != -1 )
-	//	{
-	//		continue;
-	//	}
-
-	//	i = OPPONENT(i); //Otherwise, pass turn to the opponent
-	//}
-
-	////Output the Game results:
-	//GameOver(winner, players);
-	//
-	////Destroy players:
-	//for (i = 0; i < 2; i++) { delete players[i]; }
-
 	return EXIT_SUCCESS;
-}
 
-
-
-
-
-
-void GameOver(int winner, Player*(players)[2])
-{
-	if (winner != -1) //We have a winner
-	{
-		auto WinnerChar = winner == 0 ? "A" : "B";
-		cout << "Player " << WinnerChar << " won" << endl;
-	}
-	cout << "Points:" << endl;
-	cout << "Player A: " << players[0]->getPlayerScore() << endl;
-	cout << "Player B: " << players[1]->getPlayerScore() << endl;
 }

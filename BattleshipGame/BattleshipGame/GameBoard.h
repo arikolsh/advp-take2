@@ -5,33 +5,31 @@
 #include "Ship.h"
 #include "IBattleshipGameAlgoV2.h"
 using namespace std;
-class GameBoardManager { //todo: add comments
+class GameBoard { //todo: add comments
 public:
-	GameBoardManager(int rows, int cols);
-	~GameBoardManager();
+	GameBoard(int rows, int cols);
+	~GameBoard();
 	int init(string path);
 	vector<string> getFullBoard() const;
 	char** getPlayerBoard(int player) const;
+	/* draw the game board for gui purposes with padding */
+	void draw() const;
+	/* print board. if full print is true then print padding. */	
 	void printBoard(bool fullPrint) const;
-	int getPlayerScore(int player) const;
-	bool isPlayerDefeated(int player) const;
-	int getNextPlayer() const;
-	/* Search for the attack point in shipsMap:
-	* If attack point is not in map --> it's a Miss!
-	* Else, hit the ship in map by taking one off the ship life counter
-	* If ship life is 0 (already sank) consider a Miss.
-	* If ship life has now become 0 --> it's a Sink!
-	* Else, return Hit. */
-	AttackResult executeAttack(int attackedPlayerNum, pair<int, int> attack);
+	map<pair<int, int>, pair<shared_ptr<Ship>, bool> > getShipsMap();
+	/* mark the i,j point on screen with the c symbol with color and delay. */
+	void mark(int i, int j, char c, int color, int delay) const;
 	static void freeBoard(char** board, int rows, int cols);
+	/* print external char 2d array. expect rows and cols to include padding. 
+	 * if full print is true then print padding. */
+	static void printBoard(char** board, int rows, int cols, bool fullPrint);
+	/* print external vector of strings. expect rows and cols to include padding.
+	* if full print is true then print padding. */
+	static void printBoard(vector<string> board, int rows, int cols,bool fullPrint);
+
 private:
-	/*player data: first is A, second is B*/
-	pair<int, int> _playerScores;
-	pair<int, int> _playersNumActiveShips;
 	int _rows;
 	int _cols;
-	/*who is the next player to attack*/
-	int _currentPlayer;
 	/* The full board for gui purposes*/
 	vector<string> _fullBoard;
 	/* The game board is implemented using a private map.
@@ -40,7 +38,7 @@ private:
 	* different keys may hold the same ship object. */
 	map<pair<int, int>, pair<shared_ptr<Ship>, bool> > _shipsMap;
 	/*disable copy ctor*/
-	GameBoardManager(const GameBoardManager& that) = delete;
+	GameBoard(const GameBoard& that) = delete;
 	/* fill fullBoard with empty cell symbol. */
 	void cleanBoard(char** board) const;
 	/* return 2d char array. return null ptr if error. */
@@ -57,7 +55,9 @@ private:
 	* fillPlayerBoard gets the full board with both players ships,
 	* and fills the given player's board with his ships only. */
 	int fillMapWithShips();
-	/*return true if own goal*/
-	bool isOwnGoal(int attackedPlayerNum, char shipType) const;
+	/* mark the i,j point on screen with the c symbol. */
+	void mark(int i, int j, char c) const;
+	/* mark the i,j point on screen with the c symbol with color. */
+	void mark(int i, int j, char c, int color) const;
 };
 
