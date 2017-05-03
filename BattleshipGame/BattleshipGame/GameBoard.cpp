@@ -5,7 +5,8 @@
 #include <fstream>
 #include <vector>
 #include <windows.h>
-
+#include <chrono>
+#include <thread>
 #define ALLOC_ERR printf("Error: Allocation error\n")
 #define ADJ_SHIPS_ERR printf("Adjacent Ships on Board\n")
 #define TOO_FEW_SHIPS_ERR(j) printf("Too few ships for player %c\n",j)
@@ -217,6 +218,12 @@ void GameBoard::mark(int i, int j, char c, int color) const
 	mark(i, j, c);
 	//return to default color
 	SetConsoleTextAttribute(hConsole, saved_colors);
+}
+
+void GameBoard::mark(int i, int j, char c, int color, int delay) const
+{
+	mark(i, j, c, color);
+	this_thread::sleep_for(chrono::milliseconds(delay));
 }
 
 void GameBoard::freeBoard(char ** board, int rows, int cols)
