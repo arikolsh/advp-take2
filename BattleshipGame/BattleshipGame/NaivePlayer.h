@@ -35,5 +35,5 @@ private:
 	int _rows;
 	int _cols;
 	//methods
-	bool NaivePlayer::isIsolated(int row, int col);
+	bool NaivePlayer::isIsolated(int row, int col); 
 };

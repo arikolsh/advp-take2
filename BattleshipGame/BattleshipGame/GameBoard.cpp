@@ -15,7 +15,7 @@
 #define MIN(a, b) ((a < b) ? (a) : (b))
 #define SUCCESS 0
 #define ERROR -1
-#define EMPTY_CELL ' '
+#define EMPTY_CELL '_'
 #define HORIZONTAL 1
 #define VERTICAL 0
 #define SHIPS_FOR_PLAYER 5
