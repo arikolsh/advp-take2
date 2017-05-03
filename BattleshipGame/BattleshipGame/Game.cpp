@@ -4,6 +4,7 @@
 #include <filesystem>
 #include "GameBoard.h"
 #include "GameManager.h"
+#include "NaivePlayer.h"
 using namespace std;
 #define NUM_PLAYERS 2
 #define A_NUM 0
@@ -11,7 +12,7 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-	bool debug = false;
+	bool debug = true;
 	if (debug) { //debug start
 		vector<string> inputFiles = { "", "", "" }; //[battle board, dll 1, dll 2]
 		vector<string> dllNames = { "", "" };
