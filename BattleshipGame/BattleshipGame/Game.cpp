@@ -9,8 +9,6 @@ using namespace std;
 #define NUM_PLAYERS 2
 #define A_NUM 0
 #define B_NUM 1
-#define ROWS 10
-#define COLS 10
 
 void getArgs(int argc, char** argv, bool& isQuiet, int& delay, string& searchDir)
 {
@@ -32,7 +30,7 @@ void getArgs(int argc, char** argv, bool& isQuiet, int& delay, string& searchDir
 			cout << searchDir;
 		}
 	}
-	if (isQuiet)
+	if(isQuiet)
 	{
 		delay = 0;
 	}
@@ -50,7 +48,7 @@ int main(int argc, char* argv[])
 		int delay = 500; //default, milliseconds
 		string searchDir = ""; //default
 
-							   /* get command line arguments if any */
+		/* get command line arguments if any */
 		getArgs(argc, argv, isQuiet, delay, searchDir);
 
 		/* get DLLs and board file */
@@ -58,7 +56,7 @@ int main(int argc, char* argv[])
 		if (err) { return EXIT_FAILURE; }
 
 		/* init game board data structure */
-		GameBoard game_board(ROWS, COLS);
+		GameBoard game_board(10, 10);
 		game_board.init(inputFiles[0].c_str());
 
 		/* get player boards */
@@ -67,7 +65,7 @@ int main(int argc, char* argv[])
 		char** playerBoardB = game_board.getPlayerBoard(B_NUM);
 		if (playerBoardB == nullptr)
 		{
-			GameBoard::freeBoard(playerBoardA, ROWS, COLS);
+			GameBoard::freeBoard(playerBoardA, 12, 12);
 			return EXIT_FAILURE;
 		}
 
@@ -80,24 +78,24 @@ int main(int argc, char* argv[])
 		//todo: get algorithms
 		/* init player A */
 		players[A_NUM]; // = new PredictedPlayer(); //=GetAlgorithm();
-		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), ROWS, COLS);
+		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), 12, 12);
 		if (players[A_NUM]->init(searchDir))
 		{
-			GameBoard::freeBoard(playerBoardA, ROWS, COLS);
-			GameBoard::freeBoard(playerBoardB, ROWS, COLS);
+			GameBoard::freeBoard(playerBoardA, 12, 12);
+			GameBoard::freeBoard(playerBoardB, 12, 12);
 			return EXIT_FAILURE;
 		}
-		GameBoard::freeBoard(playerBoardA, ROWS, COLS);
+		GameBoard::freeBoard(playerBoardA, 12, 12);
 
 		/* init player B */
 		players[B_NUM]; // = new PredictedPlayer(); //=GetAlgorithm();
-		players[B_NUM]->setBoard(B_NUM, const_cast<const char **>(playerBoardB), ROWS, COLS);
+		players[B_NUM]->setBoard(B_NUM, const_cast<const char **>(playerBoardB), 12, 12);
 		if (players[B_NUM]->init(searchDir))
 		{
-			GameBoard::freeBoard(playerBoardB, ROWS, COLS);
+			GameBoard::freeBoard(playerBoardB, 12, 12);
 			return EXIT_FAILURE;
 		}
-		GameBoard::freeBoard(playerBoardB, ROWS, COLS);
+		GameBoard::freeBoard(playerBoardB, 12, 12);
 
 		/* game execution */
 		int winner = manager.runGame(players);
@@ -119,12 +117,12 @@ int main(int argc, char* argv[])
 		vector<string> inputFiles = { "", "", "" }; //[battle board, dll 1, dll 2]
 		vector<string> dllNames = { "", "" };
 		vector<string> messages;
-		/* get DLLs and board file */
+													 /* get DLLs and board file */
 		int err = GameUtils::getInputFiles(inputFiles, messages, dllNames, searchDir);
 		if (err) { return EXIT_FAILURE; }
 
 		/* init game board data structure */
-		GameBoard game_board(ROWS, COLS);
+		GameBoard game_board(10, 10);
 		game_board.init(inputFiles[0].c_str());
 		//game_board.printBoard(true);
 
