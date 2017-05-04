@@ -63,7 +63,20 @@ int GameBoard::init(string path)
 
 char** GameBoard::initBoard(int rows, int cols)
 {
-	char** board = static_cast<char**>(malloc(rows * sizeof(char*)));
+	char** board = new char*[rows];
+	for (int i = 0; i < rows; i++)
+	{
+		board[i] = new char[cols];
+	}
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols; j++) {
+			board[i][j] = EMPTY_CELL;
+		}
+	}
+	return board;
+
+
+	/*char** board = static_cast<char**>(malloc(rows * sizeof(char*)));
 	if (board == nullptr)
 	{
 		ALLOC_ERR;
@@ -85,7 +98,7 @@ char** GameBoard::initBoard(int rows, int cols)
 			board[i][j] = EMPTY_CELL;
 		}
 	}
-	return board;
+	return board;*/
 }
 
 vector<string> GameBoard::getFullBoard() const
@@ -189,7 +202,7 @@ int GameBoard::getCols(bool padding) const
 }
 
 
-void GameBoard::freeBoard(char ** board, int rows)
+void GameBoard::destroyBoard(char ** board, int rows)
 {
 	if (board == nullptr)
 	{
@@ -197,12 +210,9 @@ void GameBoard::freeBoard(char ** board, int rows)
 	}
 	for (int i = 0; i < rows; i++)
 	{
-		free(board[i]);
-		board[i] = nullptr;
+		delete [] board[i];
 	}
-	free(board);
-	// ReSharper disable once CppAssignedValueIsNeverUsed
-	board = nullptr;
+	delete [] board;
 }
 
 int GameBoard::fillBoardFromFile(string path)
@@ -217,7 +227,7 @@ int GameBoard::fillBoardFromFile(string path)
 	}
 	if (!file.is_open()) {
 		cout << "Error: failed to open file " << path << endl;
-		freeBoard(tmpBoard, _rows);
+		destroyBoard(tmpBoard, _rows);
 		return FAILURE;
 	}
 	while (getline(file, line) && row <= _rows) {
@@ -231,7 +241,7 @@ int GameBoard::fillBoardFromFile(string path)
 	}
 	// convert char** to vector<string>
 	for (int i = 0; i < _rows; i++) { _fullBoard.push_back(tmpBoard[i]); }
-	freeBoard(tmpBoard, _rows);
+	destroyBoard(tmpBoard, _rows);
 	err = validateBoard();
 	if (err) {
 		return FAILURE;
