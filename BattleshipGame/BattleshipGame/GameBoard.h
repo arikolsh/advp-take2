@@ -16,7 +16,7 @@ public:
 	void draw() const;
 	/* print board. if full print is true then print padding. */	
 	void printBoard(bool fullPrint) const;
-	map<pair<int, int>, pair<shared_ptr<Ship>, bool> > getShipsMap();
+	map<pair<int, int>, pair<shared_ptr<Ship>, bool>>& GameBoard::getShipsMap();
 	/* mark the i,j point on screen with the c symbol with color and delay. */
 	void mark(int i, int j, char c, int color, int delay) const;
 	static void freeBoard(char** board, int rows, int cols);

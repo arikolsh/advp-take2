@@ -12,6 +12,8 @@
 #define EMPTY_CELL '_'
 #define NUM_SHIPS 5
 
+bool printMode = true;
+
 GameManager::GameManager(GameBoard* gameBoard, bool isQuiet, int delay)
 {
 	_playersNumActiveShips = { NUM_SHIPS, NUM_SHIPS };
@@ -20,6 +22,7 @@ GameManager::GameManager(GameBoard* gameBoard, bool isQuiet, int delay)
 	_gameBoard = gameBoard;
 	_isQuiet = isQuiet;
 	_delay = delay;
+	_shipsMap = _gameBoard->getShipsMap();
 }
 
 int GameManager::getPlayerScore(int player) const
@@ -38,6 +41,23 @@ int GameManager::getCurrentPlayer() const
 	return _currentPlayer;
 }
 
+void GameManager::printShipsMap(map<pair<int, int>, pair<shared_ptr<Ship>, bool>>& shipsMap)
+{
+	pair<int, int> cell;
+	int count = 1;
+	for (auto iter = shipsMap.begin(); iter != shipsMap.end(); ++iter)
+	{
+		cell = iter->first;
+		auto ship = iter->second.first;
+		std::cout << "Map entry " << count << " is:";
+		std::cout << "(" << cell.first << "," << cell.second << ")";
+		std::cout << " shipType: " << ship->getType();
+		std::cout << " shipLife: " << ship->getLife() << endl;
+
+		count++;
+	}
+}
+
 /* Search for the attack point in shipsMap:
 * If attack point is not in map --> it's a Miss!
 * Else, hit the ship in map by taking one off the ship life counter
@@ -46,16 +66,25 @@ int GameManager::getCurrentPlayer() const
 * Else, return Hit. */
 AttackResult GameManager::executeAttack(int attackedPlayerNum, pair<int, int> attack)
 {
+	if (printMode)
+	{
+		cout << endl << "player " << attackedPlayerNum << " is attacked on "
+			<< attack.first << "," << attack.second << endl;
+		cout << "Result: ";
+	}
+
 	if (!_isQuiet)
 	{ //bomp the point
 		_gameBoard->mark(attack.first, attack.second, BOMB_SYMBOL, BOMB_COLOR, _delay);
 	}
 
-	auto shipsMap = _gameBoard->getShipsMap();
-	auto found = shipsMap.find(attack);
-	if (found == shipsMap.end()) //attack point not in map --> Miss
+	auto found = _shipsMap.find(attack);
+	if (found == _shipsMap.end()) //attack point not in map --> Miss
 	{
-		//cout << "Miss" << endl;
+		if (printMode)
+		{
+			cout << "Miss" << endl;
+		}
 		_currentPlayer = attackedPlayerNum;
 		if (!_isQuiet)
 		{ //print the empty cell symbol
@@ -77,31 +106,44 @@ AttackResult GameManager::executeAttack(int attackedPlayerNum, pair<int, int> at
 		_currentPlayer = attackedPlayerNum;
 		if (ship->getLife() == 0) //ship already sank.. Miss
 		{
-			//cout << "Miss (hit a sunken ship)" << endl;
+			if (printMode)
+			{
+				cout << "Miss (hit a sunken ship)" << endl;
+			}
 			return AttackResult::Miss;
 		}
-		//		cout << "Hit (ship was already hit before but still has'nt sunk..)" << endl;
+		if (printMode)
+		{
+			cout << "Hit (ship was already hit before but still has'nt sunk..)" << endl;
+		}
 		return AttackResult::Hit; //you don't get another turn if cell was already hit
 	}
 
 	ship->hit(); //Hit the ship (Take one off the ship life)
 	found->second.second = true; //Mark cell as a 'Hit'
-								 //cout << "Hit ship " << ship->getType() << endl;
+	if (printMode)
+	{
+		cout << "Hit ship " << ship->getType() << endl;
+	}
 	int shipType = ship->getType();
 	if (isOwnGoal(attackedPlayerNum, shipType))
 	{
+		if (printMode)
+		{
+			cout << "own goal! player " << _currentPlayer << " hit his own ship" << endl;
+		}
 		//in case of own goal pass turn to opponent
 		_currentPlayer = attackedPlayerNum;
 	}
 	if (ship->getLife() == 0) //It's a Sink
 	{
-		if (attackedPlayerNum == A_NUM)
+		if (shipType == toupper(shipType))
 		{
-			_playersNumActiveShips.first--;
+			_playersNumActiveShips.first--; //Player A lost a ship
 		}
 		else
 		{
-			_playersNumActiveShips.second--;
+			_playersNumActiveShips.second--; //Player B lost a ship
 		}
 		//update player points
 		//playerB's ship was the one that got hit
@@ -116,7 +158,10 @@ AttackResult GameManager::executeAttack(int attackedPlayerNum, pair<int, int> at
 		{
 			_playerScores.second += ship->getSinkPoints();
 		}
-		//cout << "Sink! Score: " << ship->getSinkPoints() << endl;
+		if (printMode)
+		{
+			cout << "Sink! Score: " << ship->getSinkPoints() << endl;
+		}
 		return AttackResult::Sink;
 	}
 	return AttackResult::Hit; //Hit
@@ -146,45 +191,63 @@ int GameManager::runGame(IBattleshipGameAlgo* players[NUM_PLAYERS])
 	{
 		_gameBoard->draw();
 	}
+	if(printMode)
+	{
+		cout << "Ships Map at start point: " << endl;
+		printShipsMap(_shipsMap);
+	}
+
 	// Each player declares his next attack.
 	// Then, his enemy executes the attack and returns the AttackResult.
 	// If the player hits an enemy's ship, he gets another turn
 	// If the player make an own goal, he doesn't get another turn
 	// Game is over once a player loses all his ships, or all attackes were taken.
-	int currentPlayerNum, winner = -1;
+	int winner = -1;
 	//finishedAttacks[i] is true iff players[i] finished all his attacks
 	bool finishedAttacks[NUM_PLAYERS] = { false,false };
 	pair<int, int> attackPoint;
 	AttackResult attackResult;
 	while (true)
 	{
-		currentPlayerNum = getCurrentPlayer();
 		//Player declares his next attack:
-		attackPoint = players[currentPlayerNum]->attack();
-		if (attackPoint.first == -1 && attackPoint.second == -1)
+		attackPoint = players[_currentPlayer]->attack();
+		if (attackPoint.first == -1)
 		{
-			finishedAttacks[currentPlayerNum] = true;
+			finishedAttacks[_currentPlayer] = true;
+			if (finishedAttacks[0] && finishedAttacks[1])
+			{ //both players finished all their attacks
+				break;
+			}
+			//switch to opponent
+			_currentPlayer = 1 - _currentPlayer;
+			continue;
 		}
-		if (finishedAttacks[0] && finishedAttacks[1])
-		{ //both players finished all their attacks
-			break;
-		}
-		attackResult = executeAttack(1 - currentPlayerNum, attackPoint);
-		players[A_NUM]->notifyOnAttackResult(currentPlayerNum, attackPoint.first, attackPoint.second, attackResult);
-		players[B_NUM]->notifyOnAttackResult(currentPlayerNum, attackPoint.first, attackPoint.second, attackResult);
+		
+
+		attackResult = executeAttack(1 - _currentPlayer, attackPoint);
+		players[A_NUM]->notifyOnAttackResult(_currentPlayer, attackPoint.first, attackPoint.second, attackResult);
+		players[B_NUM]->notifyOnAttackResult(_currentPlayer, attackPoint.first, attackPoint.second, attackResult);
 		//check for defeated players
-		if (isPlayerDefeated(1 - currentPlayerNum))
+		if (isPlayerDefeated(1 - _currentPlayer))
 		{
 			//current player sunk all opponent's ships
-			winner = currentPlayerNum; //winner is the current player
+			winner = _currentPlayer; //winner is the current player
 			break;
 		}
-		if (isPlayerDefeated(currentPlayerNum))
+		if (isPlayerDefeated(_currentPlayer))
 		{
 			//current player sunk his own last ship
-			winner = 1 - currentPlayerNum; //winner is the opponent
+			winner = 1 - _currentPlayer; //winner is the opponent
 			break;
 		}
 	}
+	if (printMode)
+	{
+		cout << "Ships Map at Finish point: " << endl;
+		printShipsMap(_shipsMap);
+	}
+
 	return winner;
 }
+
+

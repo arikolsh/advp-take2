@@ -49,9 +49,6 @@ int main(int argc, char* argv[])
 {
 	bool debug[]{ true,false,false };
 
-	//SmartPlayer::TEST_PLAYER();
-	//return 0;
-
 	if (debug[0]) { //debug start
 		vector<string> inputFiles = { "", "", "" }; //[battle board, dll 1, dll 2]
 		vector<string> dllNames = { "", "" };
@@ -91,32 +88,31 @@ int main(int argc, char* argv[])
 		//todo: get algorithms
 
 		/* init player A */
-		players[A_NUM] = new PredictedPlayer(A_NUM);
+		players[A_NUM] = new PredictedPlayer();
+		//players[A_NUM] = new SmartPlayer();
+		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), 12, 12); //should send 10,10 since the Bodek will call setboard with (10,10)..
 		if (players[A_NUM]->init(searchDir) == false)
 		{
-
-			//Print something on each EXIT_FAILURE
-
 			/* free resources */
 			GameBoard::freeBoard(playerBoardA, 12, 12);  // fix to 10,10 !!
 			GameBoard::freeBoard(playerBoardB, 12, 12);
 			delete players[A_NUM];
 			return EXIT_FAILURE;
 		}
-		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), 12, 12); //should send 10,10 since the Bodek will call setboard with (10,10)..
 		GameBoard::freeBoard(playerBoardA, 12, 12); //Not needed once A has set his own board
 
 		/* init player B */
-		players[B_NUM] = new PredictedPlayer(B_NUM);
+		players[B_NUM] = new PredictedPlayer();
+		//players[B_NUM] = new SmartPlayer();
+		players[B_NUM]->setBoard(B_NUM, const_cast<const char **>(playerBoardB), 12, 12); //should send 10,10 since the Bodek will call setboard with (10,10)..
 		if (players[B_NUM]->init(searchDir) == false)
 		{
 			/* free resources */
 			GameBoard::freeBoard(playerBoardB, 12, 12);
 			delete players[A_NUM];
-			delete players[A_NUM];
+			delete players[B_NUM];
 			return EXIT_FAILURE;
 		}
-		players[B_NUM]->setBoard(B_NUM, const_cast<const char **>(playerBoardB), 12, 12); //should send 10,10 since the Bodek will call setboard with (10,10)..
 		GameBoard::freeBoard(playerBoardB, 12, 12); //Not needed once B has set his own board
 
 		/* game execution */

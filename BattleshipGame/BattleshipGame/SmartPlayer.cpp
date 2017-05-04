@@ -11,11 +11,11 @@
 #define INVALID_ATTACK { -1 , -1 } 
 #define START_POINT { 1 , 1 }
 #define A_NUM 0
-#define B_NUM 0
+#define B_NUM 1
 
 
 //Constructor
-SmartPlayer::SmartPlayer(int playerNum) : _playerNum(playerNum), _attack({-1,-1}) {}
+SmartPlayer::SmartPlayer() : _attack({-1,-1}) {}
 
 //Destructor
 SmartPlayer::~SmartPlayer()
@@ -25,11 +25,14 @@ SmartPlayer::~SmartPlayer()
 
 void SmartPlayer::setBoard(int player, const char** board, int numRows, int numCols)
 {
+	_playerNum = player;
 	_rows = numRows, _cols = numCols;
 	copyBoard(board); // Copy all player's ships to _board
 	markPotentialHits(); // Mark all cells that are a "potential hit" (might hold an opponent ship)
 	_pos = START_POINT;
+	cout << "player: " << _playerNum << endl;
 	printBoard(false);
+	cout << endl;
 }
 
 // Copy all player's ships to _board (which is initialized with EMPTY_CELLs)
@@ -42,6 +45,7 @@ void SmartPlayer::copyBoard(const char** board)
 	{
 		_board.push_back(empty_line);
 	}
+
 	// Copy all player's ships to _board
 	for (int i = 0; i < _rows; i++)
 	{
@@ -49,6 +53,7 @@ void SmartPlayer::copyBoard(const char** board)
 		{
 			cell = board[i][j];
 			if (!Ship::isShip(cell)) { continue; } // Skip non-ship cells
+
 			if ((_playerNum == A_NUM && cell == toupper(cell)) ||
 				(_playerNum == B_NUM && cell == tolower(cell)))
 			{
@@ -79,10 +84,16 @@ void SmartPlayer::markPotentialHits()
 //check the cell itself and in addition check :down, up, left, right, upper left, upper right, down left, down right
 bool SmartPlayer::potentialHit(int row, int col)
 {
+	if (_board[row][col] != EMPTY_CELL
+		&& _board[row][col] != MARKED_CELL)
+	{
+		return false;
+	}
 	for (int i = -1; i < 2; i++)
 	{
 		for (int j = -1; j < 2; j++)
 		{
+			if (abs(i) == abs(j)) { continue; } //Skip the diagonals
 			if (_board[row + i][col + j] != EMPTY_CELL 
 				&& _board[row + i][col + j] != MARKED_CELL)
 			{
@@ -178,10 +189,10 @@ void SmartPlayer::printBoard(bool fullPrint) const
 		cout << endl;
 	}
 }
-
+/*
 void SmartPlayer::TEST_PLAYER()
 {
-	IBattleshipGameAlgo* smartPlayer = new SmartPlayer(0);
+	IBattleshipGameAlgo* smartPlayer = new SmartPlayer();
 	char** boardTest = new char*[10];
 	for (size_t i = 0; i < 10; i++)
 	{
@@ -197,3 +208,4 @@ void SmartPlayer::TEST_PLAYER()
 	boardTest[9][9] = 'd';
 	smartPlayer->setBoard(0, const_cast<const char**>(boardTest), 10, 10);
 }
+*/

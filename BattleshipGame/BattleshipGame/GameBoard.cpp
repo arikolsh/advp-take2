@@ -194,7 +194,7 @@ void GameBoard::printBoard(vector<string> board, int rows, int cols, bool fullPr
 	}
 }
 
-map<pair<int, int>, pair<shared_ptr<Ship>, bool>> GameBoard::getShipsMap()
+map<pair<int, int>, pair<shared_ptr<Ship>, bool>>& GameBoard::getShipsMap()
 {
 	return _shipsMap;
 }

@@ -21,9 +21,8 @@
 #define INVALID_ATTACK {-1,-1}
 
 //Constructor
-PredictedPlayer::PredictedPlayer(int playerNum)
+PredictedPlayer::PredictedPlayer()
 {
-	_playerNum = playerNum;
 	_attackFilePath = EMPTY;
 	_playerAttacks = {};
 	_attackPosition = -1;
@@ -37,6 +36,7 @@ PredictedPlayer::~PredictedPlayer()
 
 void PredictedPlayer::setBoard(int player, const char** board, int numRows, int numCols)
 {
+	_playerNum = player;
 }
 
 void PredictedPlayer::notifyOnAttackResult(int player, int row, int col, AttackResult result)
@@ -51,6 +51,7 @@ bool PredictedPlayer::init(const std::string& path)
 	SetAttackFilePath(_playerNum, path);
 	if (_attackFilePath == EMPTY)
 	{
+		cout << "Predicted player failed to init" << endl;
 		return false; // Failed to get an attack file
 	}
 	getAttacksFromFile(); // Fill _playerAttacks vector with all his attacks
@@ -106,7 +107,7 @@ void PredictedPlayer::getAttacksFromFile()
 	while (getline(attackFile, line)) //checked: getline catch \r\n and \n.
 	{
 		attack = getAttackPair(line);
-		if (!IsValidAttack(attack))
+		if (!isValidAttack(attack))
 		{
 			continue;
 		}
@@ -116,7 +117,7 @@ void PredictedPlayer::getAttacksFromFile()
 }
 
 
-bool PredictedPlayer::IsValidAttack(pair<int, int> attack)
+bool PredictedPlayer::isValidAttack(pair<int, int> attack)
 {
 	return attack.first != -1 && attack.second != -1;
 }
@@ -277,6 +278,7 @@ int PredictedPlayer::fetchInputFiles(vector<string> & attackFiles, vector<string
 		//prepare messsages
 		wrongPath << WRONG_PATH << WORKING_DIR << endl;
 		missingAttackFile << MISSING_ATTACK_FILE << WORKING_DIR << endl;
+		//shellRes will store the file names in our search directory
 		opRes = execCmd(SEARCH_DEFAULT_CMD, shellRes);
 		if (ERROR == opRes)
 		{

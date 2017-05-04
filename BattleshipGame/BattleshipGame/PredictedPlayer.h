@@ -11,7 +11,7 @@ class PredictedPlayer : public IBattleshipGameAlgo
 public:
 
 	// Class constructor
-	explicit PredictedPlayer(int playerNum);
+	explicit PredictedPlayer();
 
 	// Class distructor
 	~PredictedPlayer();
@@ -38,7 +38,7 @@ private:
 	
 	// Private functions:
 	void getAttacksFromFile();
-	static bool IsValidAttack(pair<int, int> attack);
+	static bool isValidAttack(pair<int, int> attack);
 	int PredictedPlayer::fetchInputFiles(vector<string> & attackFiles, vector<string> & messages, const string path) const;
 	static int PredictedPlayer::execCmd(char const * cmd, string & shellRes);
 	static void PredictedPlayer::showMessages(vector<string> messages);

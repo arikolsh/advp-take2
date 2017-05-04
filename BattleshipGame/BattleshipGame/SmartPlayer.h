@@ -10,7 +10,7 @@ class SmartPlayer : public IBattleshipGameAlgo
 public:
 
 	// Class constructor
-	explicit SmartPlayer(int playerNum);
+	explicit SmartPlayer();
 
 	// Class distructor
 	~SmartPlayer();
