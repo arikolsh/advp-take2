@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 		vector<string> dllNames = { "", "" };
 		vector<string> messages;
 		bool isQuiet = false; //default
-		int delay = 500; //default, milliseconds
+		int delay = 100; //default, milliseconds
 		string searchDir = ""; //default
 		char **playerBoardA, **playerBoardB;
 
@@ -135,7 +135,6 @@ int main(int argc, char* argv[])
 		/* get player boards */
 		char** playerBoardA = game_board.getPlayerBoard(A_NUM);
 		if (playerBoardA == nullptr) { return EXIT_FAILURE; }
-		game_board.draw();
 	}
 	return EXIT_SUCCESS;
 

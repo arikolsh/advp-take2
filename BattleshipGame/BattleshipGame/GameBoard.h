@@ -18,7 +18,7 @@ public:
 	vector<string> getFullBoard() const;
 	char** getPlayerBoard(int player) const;
 	/* draw the game board for gui purposes with padding */
-	void draw() const;
+	void draw(int delay) const;
 	/* mark the i,j point on screen with the c symbol with color and delay. */
 	void mark(int i, int j, char c, int color, int delay) const;
 	/* get number of number of rows with padding if true or without if false */

@@ -119,7 +119,7 @@ char ** GameBoard::getPlayerBoard(int player) const
 	return playerBoard;
 }
 
-void GameBoard::draw() const
+void GameBoard::draw(int delay) const
 {
 	hidecursor();
 	char cell;
@@ -134,7 +134,7 @@ void GameBoard::draw() const
 		for (int j = 1; j < _cols - 1; j++)
 		{
 			cell = _fullBoard[i][j];
-			mark(i - 1, j - 1, cell, colors[tolower(cell)] | FOREGROUND_INTENSITY, 20);
+			mark(i, j, cell, colors[tolower(cell)] | FOREGROUND_INTENSITY, delay);
 		}
 	}
 }
@@ -156,7 +156,7 @@ void GameBoard::mark(int i, int j, char c) const
 	//print symbol
 	cout << c;
 	//move cursor to below the board
-	gotoxy(0, _cols);
+	gotoxy(0, _cols+3);
 }
 
 void GameBoard::mark(int i, int j, char c, int color) const

@@ -221,7 +221,6 @@ bool GameManager::isOwnGoal(int attackedPlayerNum, char shipType)
 		|| attackedPlayerNum == B_NUM && shipType != tolower(shipType);
 }
 
-
 void GameManager::gameOver(int winner) const
 {
 	if (winner != -1) //We have a winner
@@ -237,7 +236,8 @@ int GameManager::runGame(IBattleshipGameAlgo* players[NUM_PLAYERS])
 {
 	if (!_isQuiet)
 	{
-		_gameBoard->draw();
+		int drawDelay = 15;
+		_gameBoard->draw(drawDelay);
 	}
 	if(printMode)
 	{
@@ -245,11 +245,6 @@ int GameManager::runGame(IBattleshipGameAlgo* players[NUM_PLAYERS])
 		printShipsMap(_shipsMap);
 	}
 
-	// Each player declares his next attack.
-	// Then, his enemy executes the attack and returns the AttackResult.
-	// If the player hits an enemy's ship, he gets another turn
-	// If the player make an own goal, he doesn't get another turn
-	// Game is over once a player loses all his ships, or all attackes were taken.
 	int winner = -1;
 	//finishedAttacks[i] is true iff players[i] finished all his attacks
 	bool finishedAttacks[NUM_PLAYERS] = { false,false };
