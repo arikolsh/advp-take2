@@ -19,6 +19,8 @@
 
 using namespace std;
 
+bool PrintMode = false;
+
 void printBoard(int player, char** board, int rows, int cols)
 {
 	cout << endl << "Player " << player << " Board:" << endl;
@@ -89,14 +91,17 @@ int main(int argc, char* argv[])
 		if (playerBoardB == nullptr)
 		{
 			/* free resources */
-			//GameBoard::freeBoard(playerBoardA, 12, 12);
+			GameBoard::freeBoard(playerBoardA, ROWS, COLS);
 			return EXIT_FAILURE;
 		}
 
-		cout << "Full board:" << endl;
-		game_board.printBoard(false);
-		printBoard(A_NUM, playerBoardA, COLS, ROWS);
-		printBoard(B_NUM, playerBoardB, COLS, ROWS);
+		if(PrintMode)
+		{
+			cout << "Full board:" << endl;
+			game_board.printBoard(false);
+			printBoard(A_NUM, playerBoardA, COLS, ROWS);
+			printBoard(B_NUM, playerBoardB, COLS, ROWS);
+		}
 
 		/* init game manager */
 		GameManager manager(&game_board, isQuiet, delay);
@@ -113,12 +118,12 @@ int main(int argc, char* argv[])
 		if (players[A_NUM]->init(searchDir) == false)
 		{
 			/* free resources */
-			//GameBoard::freeBoard(playerBoardA, 12, 12);  // fix to 10,10 !!
-			//GameBoard::freeBoard(playerBoardB, 12, 12);
+			GameBoard::freeBoard(playerBoardA, ROWS, COLS);
+			GameBoard::freeBoard(playerBoardB, ROWS, COLS);
 			delete players[A_NUM];
 			return EXIT_FAILURE;
 		}
-		//GameBoard::freeBoard(playerBoardA, 12, 12); //Not needed once A has set his own board
+		GameBoard::freeBoard(playerBoardA, ROWS, COLS); //Not needed once A has set his own board
 
 		/* init player B */
 		players[B_NUM] = new PredictedPlayer();
@@ -127,12 +132,12 @@ int main(int argc, char* argv[])
 		if (players[B_NUM]->init(searchDir) == false)
 		{
 			/* free resources */
-			//GameBoard::freeBoard(playerBoardB, 12, 12);
+			GameBoard::freeBoard(playerBoardB, ROWS, COLS);
 			delete players[A_NUM];
 			delete players[B_NUM];
 			return EXIT_FAILURE;
 		}
-		//GameBoard::freeBoard(playerBoardB, 12, 12); //Not needed once B has set his own board
+		GameBoard::freeBoard(playerBoardB, ROWS, COLS); //Not needed once B has set his own board
 
 		/* game execution */
 		int winner = manager.runGame(players);
@@ -166,7 +171,7 @@ int main(int argc, char* argv[])
 		/* get player boards */
 		char** playerBoardA = game_board.getPlayerBoard(A_NUM);
 		if (playerBoardA == nullptr) { return EXIT_FAILURE; }
-		//GameBoard::printBoard(playerBoardA,12,12,false);
+		//GameBoard::printBoard(playerBoardA,ROWS+2,COLS+2,false);
 		game_board.draw();
 	}
 	return EXIT_SUCCESS;

@@ -12,7 +12,7 @@
 #define EMPTY_CELL '_'
 #define NUM_SHIPS 5
 
-bool printMode = false;
+bool printMode = true;
 
 GameManager::GameManager(GameBoard* gameBoard, bool isQuiet, int delay)
 {
@@ -68,7 +68,7 @@ AttackResult GameManager::executeAttack(int attackedPlayerNum, pair<int, int> at
 {
 	if (printMode)
 	{
-		cout << endl << "player " << attackedPlayerNum << " is attacked on "
+		cout << "player " << attackedPlayerNum << " is attacked on "
 			<< attack.first << "," << attack.second << endl;
 		cout << "Result: ";
 	}
