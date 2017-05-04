@@ -9,10 +9,10 @@
 #define HIT_COLOR 5 //magneta
 #define HIT_SYMBOL '*'
 #define EMPTY_CELL_COLOR 8 //gray
-#define EMPTY_CELL '_'
+#define EMPTY_CELL '-'
 #define NUM_SHIPS 5
 
-bool printMode = true;
+bool printMode = false;
 
 GameManager::GameManager(GameBoard* gameBoard, bool isQuiet, int delay)
 {
