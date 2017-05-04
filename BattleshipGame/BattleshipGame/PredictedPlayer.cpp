@@ -3,6 +3,9 @@
 #include <iostream>
 #include <algorithm>
 #include <sstream>
+#include <fstream>
+#include <vector>
+
 
 #define SHELL_RES 4096
 #define MODE "r"
@@ -15,38 +18,51 @@
 #define EMPTY ""
 #define SUCCESS 0
 #define ERROR -1
+#define INVALID_ATTACK {-1,-1}
 
 //Constructor
-PredictedPlayer::PredictedPlayer(int playerNum)
+PredictedPlayer::PredictedPlayer()
 {
-	_playerNum = playerNum;
 	_attackFilePath = EMPTY;
 	_playerAttacks = {};
-
-	_sharingAttacks = false;
-	//TODO think of how to recognize that the other player is also predicted???
-
-	_attackPosition = 0;
+	_attackPosition = -1;
 }
 
 //Destructor
 PredictedPlayer::~PredictedPlayer()
 {
-	//Do nothing for now
+	//Empty for now
 }
+
+void PredictedPlayer::setBoard(int player, const char** board, int numRows, int numCols)
+{
+	_playerNum = player;
+}
+
+void PredictedPlayer::notifyOnAttackResult(int player, int row, int col, AttackResult result)
+{
+}
+
 
 /* Gets the input directory Path with all attack files
 * Updates the _attackFilePath to the relevant attack file if provided */
 bool PredictedPlayer::init(const std::string& path)
 {
 	SetAttackFilePath(_playerNum, path);
-	return _attackFilePath != EMPTY ? true : false;
+	if (_attackFilePath == EMPTY)
+	{
+		cout << "Predicted player failed to init" << endl;
+		return false; // Failed to get an attack file
+	}
+	getAttacksFromFile(); // Fill _playerAttacks vector with all his attacks
+	return true;
 }
+
 
 void PredictedPlayer::SetAttackFilePath(int playerNum, const string& dirPath)
 {
 	vector<string> attackFiles = { EMPTY, EMPTY };
-	switch (getInputFiles(attackFiles, dirPath))
+	switch (getAttackFiles(attackFiles, dirPath))
 	{
 	case 1:
 		_attackFilePath = attackFiles[0];
@@ -62,61 +78,56 @@ void PredictedPlayer::SetAttackFilePath(int playerNum, const string& dirPath)
 
 std::pair<int, int> PredictedPlayer::attack()
 {
-	return _playerAttacks[_attackPosition];
-}
-
-
-void PredictedPlayer::notifyOnAttackResult(int player, int row, int col, AttackResult result)
-{
-	/* If this player is the one that attacked, or the 2 players are
-	* sharing a single attack file, We increment the _attackPosition */
-	if (player == _playerNum || _sharingAttacks == true)
+	pair<int,int> attack = INVALID_ATTACK;
+	if (++_attackPosition < _playerAttacks.size())
 	{
-		_attackPosition++;
+		attack = _playerAttacks[_attackPosition];
 	}
+	return attack;
 }
 
 
 //Get all legal attacks (pairs of valid ints) that exist in attackFile:
-/* This method reads the next attack point from the given attack file
-* and returns is as a pair <int, int>)
-* The functions checks if the current pair is valid and if not,
-* according to Guidelines, proceeds to the next line in the file */
+/* This method gets all the valid attack points from the given attack file
+* and inserts them to a vector of pair <int, int>) */
 void PredictedPlayer::getAttacksFromFile()
 {
 	pair<int, int> attack;
 	string line;
+	ifstream attackFile; //The file with all attacks to be executed
 
-	_attackFile.open(_attackFilePath);
-	if (!_attackFile.is_open())
+	attackFile.open(_attackFilePath);
+	if (!attackFile.is_open())
 	{
 		cout << "Error: failed to open player attack file" << endl;
 		return;
 	}
 
 	// Read entire attack file and insert all legal attacks to a vector
-	while (getline(_attackFile, line)) //checked: getline catch \r\n and \n.
+	while (getline(attackFile, line)) //checked: getline catch \r\n and \n.
 	{
-		attack = GetAttackPair(line);
-		if (!IsValidAttack(attack))
+		attack = getAttackPair(line);
+		if (!isValidAttack(attack))
 		{
 			continue;
 		}
-		//Push current valid attack into _playerAttacks vector:
-		_playerAttacks.push_back(attack);
+		_playerAttacks.push_back(attack); //Push current valid attack into _playerAttacks vector
 	}
-	//Finished inserting all attacks into _playerAttacks vector:
-	_attackFile.close();
+	attackFile.close(); //Finished inserting all attacks into _playerAttacks vector
 }
 
 
-bool PredictedPlayer::IsValidAttack(pair<int, int> attack)
+bool PredictedPlayer::isValidAttack(pair<int, int> attack)
 {
 	return attack.first != -1 && attack.second != -1;
 }
 
-
-pair<int, int> PredictedPlayer::GetAttackPair(string& line) const
+/* This method gets a line from the attack file
+ * and tries to parse it into a valid attack point 
+ * that is returned as a pair <int, int>.
+ * If the line does not consist of a valid attack pair,
+ * {-1 , -1} is returned to sign an illegal attack */
+pair<int, int> PredictedPlayer::getAttackPair(string& line) const
 {
 	pair<int, int> attack = { -1,-1 };
 	int i, j;
@@ -181,12 +192,12 @@ pair<int, int> PredictedPlayer::GetAttackPair(string& line) const
 
 	// Valid attack:
 	attack.first = i;
-	attack.first = j;
+	attack.second = j;
 	return attack;
 }
 
 
-int PredictedPlayer::getInputFiles(vector<string> & attackFiles, string searchDir) const
+int PredictedPlayer::getAttackFiles(vector<string> & attackFiles, string searchDir) const
 {
 	int numOfFiles;
 	vector<string> messages;
@@ -267,6 +278,7 @@ int PredictedPlayer::fetchInputFiles(vector<string> & attackFiles, vector<string
 		//prepare messsages
 		wrongPath << WRONG_PATH << WORKING_DIR << endl;
 		missingAttackFile << MISSING_ATTACK_FILE << WORKING_DIR << endl;
+		//shellRes will store the file names in our search directory
 		opRes = execCmd(SEARCH_DEFAULT_CMD, shellRes);
 		if (ERROR == opRes)
 		{

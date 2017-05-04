@@ -8,6 +8,7 @@ public:
 	int getPlayerScore(int player) const;
 	bool isPlayerDefeated(int player) const;
 	int getCurrentPlayer() const;
+	static void printShipsMap(map<pair<int, int>, pair<shared_ptr<Ship>, bool>>& shipsMap);
 	/* Search for the attack point in shipsMap:
 	* If attack point is not in map --> it's a Miss!
 	* Else, hit the ship in map by taking one off the ship life counter
@@ -18,6 +19,7 @@ public:
 	void gameOver(int winner) const;
 	int runGame(IBattleshipGameAlgo * players[NUM_PLAYERS]);
 private: 
+	map<pair<int, int>, pair<shared_ptr<Ship>, bool>> _shipsMap;
 	GameManager() = delete;
 	GameManager(const GameManager& that) = delete;
 	GameBoard* _gameBoard;
