@@ -12,7 +12,7 @@
 #define EMPTY_CELL '_'
 #define NUM_SHIPS 5
 
-bool printMode = true;
+bool printMode = false;
 
 GameManager::GameManager(GameBoard* gameBoard, bool isQuiet, int delay)
 {

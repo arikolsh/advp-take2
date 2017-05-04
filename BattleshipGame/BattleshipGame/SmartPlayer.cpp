@@ -5,14 +5,14 @@
 #include "ship.h"
 #include <iostream>
 
-
-#define EMPTY_CELL '_'
+#define EMPTY_CELL '-'
 #define MARKED_CELL 'x'
 #define INVALID_ATTACK { -1 , -1 } 
 #define START_POINT { 1 , 1 }
 #define A_NUM 0
 #define B_NUM 1
 
+bool print_mode = true;
 
 //Constructor
 SmartPlayer::SmartPlayer() : _attack({-1,-1}) {}
@@ -30,8 +30,11 @@ void SmartPlayer::setBoard(int player, const char** board, int numRows, int numC
 	copyBoard(board); // Copy all player's ships to _board
 	markPotentialHits(); // Mark all cells that are a "potential hit" (might hold an opponent ship)
 	_pos = START_POINT;
-	cout << "player: " << _playerNum << endl;
-	printBoard(false);
+	if(print_mode)
+	{
+		cout << endl << "player: " << _playerNum << endl;
+		printBoard(false);
+	}
 	cout << endl;
 }
 
@@ -178,6 +181,13 @@ void SmartPlayer::updatePosition(int i, int j)
 
 void SmartPlayer::printBoard(bool fullPrint) const
 {
+	for (int i = 0; i < _rows+2; i++) {
+		for (int j = 0; j < _cols+2; j++) {
+			cout << _board[i][j];
+		}
+		cout << endl;
+	}
+	/*
 	int start, rowEnd, colEnd;
 	start = fullPrint ? 0 : 1;
 	rowEnd = fullPrint ? _rows+2 : _rows+1;
@@ -188,6 +198,7 @@ void SmartPlayer::printBoard(bool fullPrint) const
 		}
 		cout << endl;
 	}
+	 */
 }
 /*
 void SmartPlayer::TEST_PLAYER()

@@ -59,5 +59,7 @@ private:
 	void mark(int i, int j, char c) const;
 	/* mark the i,j point on screen with the c symbol with color. */
 	void mark(int i, int j, char c, int color) const;
+
+	static char** GameBoard::initPlayerBoard(int rows, int cols);
 };
 

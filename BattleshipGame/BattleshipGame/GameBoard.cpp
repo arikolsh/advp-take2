@@ -16,7 +16,7 @@
 #define MIN(a, b) ((a < b) ? (a) : (b))
 #define SUCCESS 0
 #define FAILURE -1
-#define EMPTY_CELL '_'
+#define EMPTY_CELL '-'
 #define HORIZONTAL 1
 #define VERTICAL 0
 #define SHIPS_FOR_PLAYER 5
@@ -100,6 +100,34 @@ char** GameBoard::getCleanBoard(bool clean) const
 
 }
 
+
+char** GameBoard::initPlayerBoard(int rows, int cols)
+{
+	char** board = static_cast<char**>(malloc(rows * sizeof(char*)));
+	if (board == nullptr)
+	{
+		ALLOC_ERR;
+		return nullptr;
+	}
+
+	for (int i = 0; i < rows; i++)
+	{
+		board[i] = static_cast<char*>(malloc(cols * sizeof(char)));
+		if (board[i] == nullptr)
+		{
+			ALLOC_ERR;
+			freeBoard(board, i, cols);
+			return nullptr;
+		}
+	}
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols; j++) {
+			board[i][j] = EMPTY_CELL;
+		}
+	}
+	return board;
+}
+
 vector<string> GameBoard::getFullBoard() const
 {
 	return _fullBoard;
@@ -113,20 +141,19 @@ char ** GameBoard::getPlayerBoard(int player) const
 	// player is A => decider is false => will only insert upper case chars
 	// player is B => decider is true => will only insert lower case chars 
 	bool decider = player == A_NUM ? false : true;
-	char** playerBoard = getCleanBoard(true);
+	char** playerBoard = initPlayerBoard(_rows - 2, _cols - 2);
 	if (playerBoard == nullptr)
 	{
 		return nullptr;
 	}
-	for (int i = 0; i < _rows; i++)
+	for (int i = 0; i < _rows - 2; i++)
 	{
-		for (int j = 0; j < _cols; j++)
+		for (int j = 0; j < _cols - 2; j++)
 		{
-			c = _fullBoard[i][j];
+			c = _fullBoard[i+1][j+1];
 			if (c == EMPTY_CELL) { continue; }
 			condition = tolower(c) == c; //condition true iff c was lower case
 			if (condition == decider) { playerBoard[i][j] = c; }
-
 		}
 	}
 	return playerBoard;
@@ -142,9 +169,9 @@ void GameBoard::draw() const
 	colors[ROCKET_SHIP] = 2; //green
 	colors[DESTROYER] = 4; //red
 	colors[EMPTY_CELL] = 8; //gray
-	for (int i = 1; i < _rows - 2; i++)
+	for (int i = 1; i < _rows - 1; i++)
 	{
-		for (int j = 1; j < _cols - 2; j++)
+		for (int j = 1; j < _cols - 1; j++)
 		{
 			cell = _fullBoard[i][j];
 			mark(i - 1, j - 1, cell, colors[tolower(cell)] | FOREGROUND_INTENSITY , 20);
@@ -156,8 +183,8 @@ void GameBoard::printBoard(bool fullPrint) const
 {
 	int start, rowEnd, colEnd;
 	start = fullPrint ? 0 : 1;
-	rowEnd = fullPrint ? _rows : _rows - 2;
-	colEnd = fullPrint ? _cols : _cols - 2;
+	rowEnd = fullPrint ? _rows : _rows - 1;
+	colEnd = fullPrint ? _cols : _cols - 1;
 	for (int i = start; i < rowEnd; i++) {
 		for (int j = start; j < colEnd; j++) {
 			cout << _fullBoard[i][j];
@@ -170,8 +197,8 @@ void GameBoard::printBoard(char ** board, int rows, int cols, bool fullPrint)
 {
 	int start, rowEnd, colEnd;
 	start = fullPrint ? 0 : 1;
-	rowEnd = fullPrint ? rows : rows - 2;
-	colEnd = fullPrint ? cols : cols - 2;
+	rowEnd = fullPrint ? rows : rows - 1;
+	colEnd = fullPrint ? cols : cols - 1;
 	for (int i = start; i < rowEnd; i++) {
 		for (int j = start; j < colEnd; j++) {
 			cout << board[i][j];

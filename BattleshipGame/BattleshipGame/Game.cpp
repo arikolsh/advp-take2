@@ -19,6 +19,19 @@
 
 using namespace std;
 
+void printBoard(int player, char** board, int rows, int cols)
+{
+	cout << endl << "Player " << player << " Board:" << endl;
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols; j++) {
+			cout << board[i][j];
+		}
+		cout << endl;
+	}
+	cout << endl;
+}
+
+
 void getArgs(int argc, char** argv, bool& isQuiet, int& delay, string& searchDir)
 {
 	vector<string> argsVector(argv, argv + argc);
@@ -75,9 +88,15 @@ int main(int argc, char* argv[])
 		playerBoardB = game_board.getPlayerBoard(B_NUM);
 		if (playerBoardB == nullptr)
 		{
-			GameBoard::freeBoard(playerBoardA, 12, 12);
+			/* free resources */
+			//GameBoard::freeBoard(playerBoardA, 12, 12);
 			return EXIT_FAILURE;
 		}
+
+		cout << "Full board:" << endl;
+		game_board.printBoard(false);
+		printBoard(A_NUM, playerBoardA, COLS, ROWS);
+		printBoard(B_NUM, playerBoardB, COLS, ROWS);
 
 		/* init game manager */
 		GameManager manager(&game_board, isQuiet, delay);
@@ -90,30 +109,30 @@ int main(int argc, char* argv[])
 		/* init player A */
 		players[A_NUM] = new PredictedPlayer();
 		//players[A_NUM] = new SmartPlayer();
-		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), 12, 12); //should send 10,10 since the Bodek will call setboard with (10,10)..
+		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), ROWS, COLS);
 		if (players[A_NUM]->init(searchDir) == false)
 		{
 			/* free resources */
-			GameBoard::freeBoard(playerBoardA, 12, 12);  // fix to 10,10 !!
-			GameBoard::freeBoard(playerBoardB, 12, 12);
+			//GameBoard::freeBoard(playerBoardA, 12, 12);  // fix to 10,10 !!
+			//GameBoard::freeBoard(playerBoardB, 12, 12);
 			delete players[A_NUM];
 			return EXIT_FAILURE;
 		}
-		GameBoard::freeBoard(playerBoardA, 12, 12); //Not needed once A has set his own board
+		//GameBoard::freeBoard(playerBoardA, 12, 12); //Not needed once A has set his own board
 
 		/* init player B */
 		players[B_NUM] = new PredictedPlayer();
 		//players[B_NUM] = new SmartPlayer();
-		players[B_NUM]->setBoard(B_NUM, const_cast<const char **>(playerBoardB), 12, 12); //should send 10,10 since the Bodek will call setboard with (10,10)..
+		players[B_NUM]->setBoard(B_NUM, const_cast<const char **>(playerBoardB), ROWS, COLS);
 		if (players[B_NUM]->init(searchDir) == false)
 		{
 			/* free resources */
-			GameBoard::freeBoard(playerBoardB, 12, 12);
+			//GameBoard::freeBoard(playerBoardB, 12, 12);
 			delete players[A_NUM];
 			delete players[B_NUM];
 			return EXIT_FAILURE;
 		}
-		GameBoard::freeBoard(playerBoardB, 12, 12); //Not needed once B has set his own board
+		//GameBoard::freeBoard(playerBoardB, 12, 12); //Not needed once B has set his own board
 
 		/* game execution */
 		int winner = manager.runGame(players);
@@ -142,7 +161,7 @@ int main(int argc, char* argv[])
 		/* init game board data structure */
 		GameBoard game_board(ROWS, COLS);
 		game_board.init(inputFiles[0].c_str());
-		//game_board.printBoard(true);
+		//game_board.printBoard(false);
 
 		/* get player boards */
 		char** playerBoardA = game_board.getPlayerBoard(A_NUM);
