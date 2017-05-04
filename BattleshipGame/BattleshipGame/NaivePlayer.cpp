@@ -1,13 +1,12 @@
 #include "NaivePlayer.h"
 
-#define EMPTY_CELL '_'
+#define EMPTY_CELL '-'
 
 using namespace std;
 
-NaivePlayer::NaivePlayer(int playerNum)
+NaivePlayer::NaivePlayer()
 {
 	//manual initialization isn't needed for _player_attcks and _board (auto initialization for vectors)
-	_playerNum = playerNum;
 	_attackPosition = 0;
 	_rows = 0;
 	_cols = 0;
@@ -22,8 +21,11 @@ void NaivePlayer::setBoard(int player, const char ** board, int numRows, int num
 	for (int i = 0; i < numRows + 2; i++) { // padding with 2 lines and colums for simplicity
 		_board.push_back(emptyLine);
 	}
-	for (int i = 1; i < numRows - 1; i++) {
-		_board.push_back(board[i - 1]);
+	for (int i = 0; i < numRows; i++) {
+		for (int j = 0; j < numCols; j++)
+		{
+			_board[i + 1][j + 1] = board[i][j];
+		}
 	}
 }
 
@@ -34,11 +36,11 @@ bool NaivePlayer::isIsolated(int row, int col)
 		_board[row + 1][col] == EMPTY_CELL && // down
 		_board[row - 1][col] == EMPTY_CELL && // up
 		_board[row][col - 1] == EMPTY_CELL && // left
-		_board[row][col + 1] == EMPTY_CELL && // right
-		_board[row - 1][col - 1] == EMPTY_CELL && // upper left
-		_board[row - 1][col + 1] == EMPTY_CELL && // upper right
-		_board[row + 1][col - 1] == EMPTY_CELL && // down left
-		_board[row + 1][col + 1] == EMPTY_CELL);  // down right
+		_board[row][col + 1] == EMPTY_CELL);// right
+		//_board[row - 1][col - 1] == EMPTY_CELL && // upper left
+		//_board[row - 1][col + 1] == EMPTY_CELL && // upper right
+		//_board[row + 1][col - 1] == EMPTY_CELL && // down left
+		//_board[row + 1][col + 1] == EMPTY_CELL);  // down right
 }
 
 bool NaivePlayer::init(const std::string & path)
@@ -66,7 +68,7 @@ pair<int, int> NaivePlayer::attack()
 	{
 		return pair<int, int>(-1, -1);
 	}
-	return _playerAttacks[_attackPosition++]; //TODO: check that it's actually return the value in the index and just then added 1 to it
+	return _playerAttacks[_attackPosition++];
 }
 
 void NaivePlayer::notifyOnAttackResult(int player, int row, int col, AttackResult result)

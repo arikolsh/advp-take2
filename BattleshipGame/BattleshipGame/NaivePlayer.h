@@ -10,7 +10,7 @@ class NaivePlayer : public IBattleshipGameAlgo
 public:
 
 	// Class constructor
-	explicit NaivePlayer(int playerNum);
+	explicit NaivePlayer();
 
 	// Class distructor
 	~NaivePlayer();

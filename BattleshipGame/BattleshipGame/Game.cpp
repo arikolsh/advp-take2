@@ -9,6 +9,7 @@
 //! ! ! ! ! ! ! ! ! ! ! !ERASE PLAYER HEADERS AT THE END ! ! ! ! ! ! ! ! ! ! ! ! ! !
 #include "SmartPlayer.h"  
 #include "PredictedPlayer.h"
+#include "NaivePlayer.h"
 
 
 #define NUM_PLAYERS 2
@@ -77,7 +78,7 @@ int main(int argc, char* argv[])
 		//todo: get algorithms
 
 		/* init player A */
-		players[A_NUM] = new PredictedPlayer();
+		players[A_NUM] = new NaivePlayer();
 		//players[A_NUM] = new SmartPlayer();
 		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), ROWS, COLS);
 		if (players[A_NUM]->init(searchDir) == false)
@@ -91,7 +92,7 @@ int main(int argc, char* argv[])
 		GameBoard::freeBoard(playerBoardA, ROWS, COLS); //Not needed once A has set his own board
 
 		/* init player B */
-		players[B_NUM] = new PredictedPlayer();
+		players[B_NUM] = new NaivePlayer();
 		//players[B_NUM] = new SmartPlayer();
 		players[B_NUM]->setBoard(B_NUM, const_cast<const char **>(playerBoardB), ROWS, COLS);
 		if (players[B_NUM]->init(searchDir) == false)
