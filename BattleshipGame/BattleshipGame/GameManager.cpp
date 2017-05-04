@@ -10,10 +10,11 @@
 #define HIT_SYMBOL '*'
 #define EMPTY_CELL_COLOR 8 //gray
 #define EMPTY_CELL '_'
+#define NUM_SHIPS 5
 
 GameManager::GameManager(GameBoard* gameBoard, bool isQuiet, int delay)
 {
-	_playersNumActiveShips = { 0, 0 };
+	_playersNumActiveShips = { NUM_SHIPS, NUM_SHIPS };
 	_playerScores = { 0, 0 };
 	_currentPlayer = A_NUM; //player A starts the game
 	_gameBoard = gameBoard;
@@ -28,7 +29,8 @@ int GameManager::getPlayerScore(int player) const
 
 bool GameManager::isPlayerDefeated(int player) const
 {
-	return player == A_NUM ? _playersNumActiveShips.first <= 0 : _playersNumActiveShips.second <= 0;
+	return player == A_NUM ? _playersNumActiveShips.first <= 0 
+	: _playersNumActiveShips.second <= 0;
 }
 
 int GameManager::getCurrentPlayer() const

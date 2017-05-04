@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
 {
 	bool debug[]{ true,false,false };
 
-	SmartPlayer::TEST_PLAYER();
+	//SmartPlayer::TEST_PLAYER();
 	//return 0;
 
 	if (debug[0]) { //debug start
@@ -94,6 +94,9 @@ int main(int argc, char* argv[])
 		players[A_NUM] = new PredictedPlayer(A_NUM);
 		if (players[A_NUM]->init(searchDir) == false)
 		{
+
+			//Print something on each EXIT_FAILURE
+
 			/* free resources */
 			GameBoard::freeBoard(playerBoardA, 12, 12);  // fix to 10,10 !!
 			GameBoard::freeBoard(playerBoardB, 12, 12);
