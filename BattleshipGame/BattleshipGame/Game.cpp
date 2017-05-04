@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 		if (playerBoardB == nullptr)
 		{
 			/* free resources */
-			GameBoard::freeBoard(playerBoardA, ROWS);
+			GameBoard::destroyBoard(playerBoardA, ROWS);
 			return EXIT_FAILURE;
 		}
 
@@ -83,12 +83,12 @@ int main(int argc, char* argv[])
 		if (players[A_NUM]->init(searchDir) == false)
 		{
 			/* free resources */
-			GameBoard::freeBoard(playerBoardA, ROWS);
-			GameBoard::freeBoard(playerBoardB, ROWS);
+			GameBoard::destroyBoard(playerBoardA, ROWS);
+			GameBoard::destroyBoard(playerBoardB, ROWS);
 			delete players[A_NUM];
 			return EXIT_FAILURE;
 		}
-		GameBoard::freeBoard(playerBoardA, ROWS); //Not needed once A has set his own board
+		GameBoard::destroyBoard(playerBoardA, ROWS); //Not needed once A has set his own board
 
 		/* init player B */
 		players[B_NUM] = new PredictedPlayer();
@@ -97,12 +97,12 @@ int main(int argc, char* argv[])
 		if (players[B_NUM]->init(searchDir) == false)
 		{
 			/* free resources */
-			GameBoard::freeBoard(playerBoardB, ROWS);
+			GameBoard::destroyBoard(playerBoardB, ROWS);
 			delete players[A_NUM];
 			delete players[B_NUM];
 			return EXIT_FAILURE;
 		}
-		GameBoard::freeBoard(playerBoardB, ROWS); //Not needed once B has set his own board
+		GameBoard::destroyBoard(playerBoardB, ROWS); //Not needed once B has set his own board
 
 		/* game execution */
 		int winner = manager.runGame(players);

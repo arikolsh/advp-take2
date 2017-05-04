@@ -25,7 +25,7 @@ public:
 	int getRows(bool padding) const;
 	/* get number of number columns with padding if true or without if false */
 	int getCols(bool padding) const;
-	static void freeBoard(char ** board, int rows);
+	static void destroyBoard(char ** board, int rows);
 	/* print the gameboard. without the padding*/
 	void printGameBoard();
 private:
