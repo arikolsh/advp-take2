@@ -58,50 +58,10 @@ int GameBoard::init(string path)
 	if (err) {
 		return FAILURE;
 	}
-	err = fillMapWithShips();
-	if (err) {
-		return FAILURE;
-	}
 	return SUCCESS;
 }
 
-void GameBoard::cleanBoard(char** board) const
-{
-	for (int i = 0; i < _rows; i++) {
-		for (int j = 0; j < _cols; j++) {
-			board[i][j] = EMPTY_CELL;
-		}
-	}
-}
-
-char** GameBoard::getCleanBoard(bool clean) const
-{
-	char** board = static_cast<char**>(malloc(_rows * sizeof(char*)));
-	if (board == nullptr)
-	{
-		ALLOC_ERR;
-		return nullptr;
-	}
-
-	for (int i = 0; i < _rows; i++)
-	{
-		board[i] = static_cast<char*>(malloc(_cols * sizeof(char)));
-		if (board[i] == nullptr)
-		{
-			ALLOC_ERR;
-			freeBoard(board, i, _cols);
-			return nullptr;
-		}
-	}
-	if (clean) {
-		cleanBoard(board); //fill with empty symbols
-	}
-	return board;
-
-}
-
-
-char** GameBoard::initPlayerBoard(int rows, int cols)
+char** GameBoard::initBoard(int rows, int cols)
 {
 	char** board = static_cast<char**>(malloc(rows * sizeof(char*)));
 	if (board == nullptr)
@@ -116,7 +76,7 @@ char** GameBoard::initPlayerBoard(int rows, int cols)
 		if (board[i] == nullptr)
 		{
 			ALLOC_ERR;
-			freeBoard(board, i, cols);
+			freeBoard(board, i);
 			return nullptr;
 		}
 	}
@@ -141,7 +101,7 @@ char ** GameBoard::getPlayerBoard(int player) const
 	// player is A => decider is false => will only insert upper case chars
 	// player is B => decider is true => will only insert lower case chars 
 	bool decider = player == A_NUM ? false : true;
-	char** playerBoard = initPlayerBoard(_rows - 2, _cols - 2);
+	char** playerBoard = initBoard(_rows - 2, _cols - 2);
 	if (playerBoard == nullptr)
 	{
 		return nullptr;
@@ -150,7 +110,7 @@ char ** GameBoard::getPlayerBoard(int player) const
 	{
 		for (int j = 0; j < _cols - 2; j++)
 		{
-			c = _fullBoard[i+1][j+1];
+			c = _fullBoard[i + 1][j + 1];
 			if (c == EMPTY_CELL) { continue; }
 			condition = tolower(c) == c; //condition true iff c was lower case
 			if (condition == decider) { playerBoard[i][j] = c; }
@@ -159,7 +119,7 @@ char ** GameBoard::getPlayerBoard(int player) const
 	return playerBoard;
 }
 
-void GameBoard::draw() const
+void GameBoard::draw(int delay) const
 {
 	hidecursor();
 	char cell;
@@ -174,56 +134,19 @@ void GameBoard::draw() const
 		for (int j = 1; j < _cols - 1; j++)
 		{
 			cell = _fullBoard[i][j];
-			mark(i - 1, j - 1, cell, colors[tolower(cell)] | FOREGROUND_INTENSITY , 20);
+			mark(i, j, cell, colors[tolower(cell)] | FOREGROUND_INTENSITY, delay);
 		}
 	}
 }
 
-void GameBoard::printBoard(bool fullPrint) const
+void GameBoard::printGameBoard()
 {
-	int start, rowEnd, colEnd;
-	start = fullPrint ? 0 : 1;
-	rowEnd = fullPrint ? _rows : _rows - 1;
-	colEnd = fullPrint ? _cols : _cols - 1;
-	for (int i = start; i < rowEnd; i++) {
-		for (int j = start; j < colEnd; j++) {
+	for (int i = 1; i < _rows - 2; i++) {
+		for (int j = 1; j < _rows - 2; j++) {
 			cout << _fullBoard[i][j];
 		}
 		cout << endl;
 	}
-}
-
-void GameBoard::printBoard(char ** board, int rows, int cols, bool fullPrint)
-{
-	int start, rowEnd, colEnd;
-	start = fullPrint ? 0 : 1;
-	rowEnd = fullPrint ? rows : rows - 1;
-	colEnd = fullPrint ? cols : cols - 1;
-	for (int i = start; i < rowEnd; i++) {
-		for (int j = start; j < colEnd; j++) {
-			cout << board[i][j];
-		}
-		cout << endl;
-	}
-}
-
-void GameBoard::printBoard(vector<string> board, int rows, int cols, bool fullPrint)
-{
-	int start, rowEnd, colEnd;
-	start = fullPrint ? 0 : 1;
-	rowEnd = fullPrint ? rows : rows - 2;
-	colEnd = fullPrint ? cols : cols - 2;
-	for (int i = start; i < rowEnd; i++) {
-		for (int j = start; j < colEnd; j++) {
-			cout << board[i][j];
-		}
-		cout << endl;
-	}
-}
-
-map<pair<int, int>, pair<shared_ptr<Ship>, bool>>& GameBoard::getShipsMap()
-{
-	return _shipsMap;
 }
 
 void GameBoard::mark(int i, int j, char c) const
@@ -233,7 +156,7 @@ void GameBoard::mark(int i, int j, char c) const
 	//print symbol
 	cout << c;
 	//move cursor to below the board
-	gotoxy(0, _cols);
+	gotoxy(0, _cols+3);
 }
 
 void GameBoard::mark(int i, int j, char c, int color) const
@@ -255,13 +178,24 @@ void GameBoard::mark(int i, int j, char c, int color, int delay) const
 	this_thread::sleep_for(chrono::milliseconds(delay));
 }
 
-void GameBoard::freeBoard(char ** board, int rows, int cols)
+int GameBoard::getRows(bool padding) const
+{	
+	return padding ? _rows : _rows-2;
+}
+
+int GameBoard::getCols(bool padding) const
+{
+	return padding ? _cols: _cols-2;
+}
+
+
+void GameBoard::freeBoard(char ** board, int rows)
 {
 	if (board == nullptr)
 	{
 		return;
 	}
-	for (int i = 0; i < cols; i++)
+	for (int i = 0; i < rows; i++)
 	{
 		free(board[i]);
 		board[i] = nullptr;
@@ -275,19 +209,19 @@ int GameBoard::fillBoardFromFile(string path)
 {
 	string line;
 	int row = 1, err;
-	size_t m;
+	int m;
 	ifstream file(path);
-	char **tmpBoard = getCleanBoard(true);
+	char **tmpBoard = initBoard(_rows,_cols);
 	if (tmpBoard == nullptr) {
 		return FAILURE;
 	}
 	if (!file.is_open()) {
 		cout << "Error: failed to open file " << path << endl;
-		freeBoard(tmpBoard, _rows, _cols);
+		freeBoard(tmpBoard, _rows);
 		return FAILURE;
 	}
 	while (getline(file, line) && row <= _rows) {
-		m = MIN(_cols, line.length());
+		m = MIN(_cols, (int)line.length());
 		for (int i = 1; i <= m; i++) { //1,2,3,4,5,6,7,8,9,10
 			if (Ship::isShip(line[i - 1])) { //check if valid ship char
 				tmpBoard[row][i] = line[i - 1];
@@ -297,60 +231,11 @@ int GameBoard::fillBoardFromFile(string path)
 	}
 	// convert char** to vector<string>
 	for (int i = 0; i < _rows; i++) { _fullBoard.push_back(tmpBoard[i]); }
-	freeBoard(tmpBoard, _rows, _cols);
+	freeBoard(tmpBoard, _rows);
 	err = validateBoard();
 	if (err) {
 		return FAILURE;
 	}
-	return SUCCESS;
-}
-
-int GameBoard::fillMapWithShips()
-{
-	int i, j, k, shipLen, direction;
-	pair<int, int> xy;
-	pair<shared_ptr<Ship>, bool> shipAndHit;
-	char visited = 'x', cell;
-	vector<string> boardCpy(_fullBoard);
-	//copy board content (so we can mark visited cells):
-	for (i = 0; i < _rows; i++) {
-		for (j = 0; j < _cols; j++) {
-			boardCpy[i][j] = _fullBoard[i][j];
-		}
-	}
-
-	//Iterate over the board and create the shipsMap:
-	for (i = 0; i < _rows; i++) {
-		for (j = 0; j < _cols; j++) {
-			cell = boardCpy[i][j];
-			if (cell == EMPTY_CELL || cell == visited) { continue; }
-			boardCpy[i][j] = visited;
-			//cell is a ship character!
-			shared_ptr<Ship> ship(new Ship(cell)); //create the ship object
-												   //Add to shipsMap all cells which belong to the current ship:
-			shipLen = ship->getLife();
-			direction = (boardCpy[i][j + 1] == cell) ? HORIZONTAL : VERTICAL;
-			k = 0;
-			while (k < shipLen)
-			{
-				if (direction == HORIZONTAL)
-				{
-					xy = { i, j + k };
-					boardCpy[i][j + k] = visited;
-				}
-				else if (direction == VERTICAL)
-				{
-					xy = { i + k, j };
-					boardCpy[i + k][j] = visited;
-
-				}
-				shipAndHit = { ship , false };
-				_shipsMap.insert(std::make_pair(xy, shipAndHit));
-				k++;
-			}
-		}
-	}
-
 	return SUCCESS;
 }
 
