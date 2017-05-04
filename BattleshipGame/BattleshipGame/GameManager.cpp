@@ -11,6 +11,11 @@
 #define EMPTY_CELL_COLOR 8 //gray
 #define EMPTY_CELL '-'
 #define NUM_SHIPS 5
+#define SUCCESS 0
+#define FAILURE -1
+#define EMPTY_CELL '-'
+#define HORIZONTAL 1
+#define VERTICAL 0
 
 bool printMode = false;
 
@@ -22,7 +27,50 @@ GameManager::GameManager(GameBoard* gameBoard, bool isQuiet, int delay)
 	_gameBoard = gameBoard;
 	_isQuiet = isQuiet;
 	_delay = delay;
-	_shipsMap = _gameBoard->getShipsMap();
+	fillMapWithShips();
+}
+
+void GameManager::fillMapWithShips()
+{
+	int i, j, k, shipLen, direction;
+	pair<int, int> xy;
+	pair<shared_ptr<Ship>, bool> shipAndHit;
+	char visited = 'x', cell;
+	vector<string> boardCpy(_gameBoard->getFullBoard());
+	int rows = _gameBoard->getRows(/* with padding */true);
+	int cols = _gameBoard->getCols(/* with padding */true);
+
+	//Iterate over the board and create the shipsMap:
+	for (i = 0; i < rows; i++) {
+		for (j = 0; j < cols; j++) {
+			cell = boardCpy[i][j];
+			if (cell == EMPTY_CELL || cell == visited) { continue; }
+			boardCpy[i][j] = visited;
+			//cell is a ship character!
+			shared_ptr<Ship> ship(new Ship(cell)); //create the ship object
+												   //Add to shipsMap all cells which belong to the current ship:
+			shipLen = ship->getLife();
+			direction = (boardCpy[i][j + 1] == cell) ? HORIZONTAL : VERTICAL;
+			k = 0;
+			while (k < shipLen)
+			{
+				if (direction == HORIZONTAL)
+				{
+					xy = { i, j + k };
+					boardCpy[i][j + k] = visited;
+				}
+				else if (direction == VERTICAL)
+				{
+					xy = { i + k, j };
+					boardCpy[i + k][j] = visited;
+
+				}
+				shipAndHit = { ship , false };
+				_shipsMap.insert(make_pair(xy, shipAndHit));
+				k++;
+			}
+		}
+	}
 }
 
 int GameManager::getPlayerScore(int player) const
@@ -49,10 +97,10 @@ void GameManager::printShipsMap(map<pair<int, int>, pair<shared_ptr<Ship>, bool>
 	{
 		cell = iter->first;
 		auto ship = iter->second.first;
-		std::cout << "Map entry " << count << " is:";
-		std::cout << "(" << cell.first << "," << cell.second << ")";
-		std::cout << " shipType: " << ship->getType();
-		std::cout << " shipLife: " << ship->getLife() << endl;
+		cout << "Map entry " << count << " is:";
+		cout << "(" << cell.first << "," << cell.second << ")";
+		cout << " shipType: " << ship->getType();
+		cout << " shipLife: " << ship->getLife() << endl;
 
 		count++;
 	}
@@ -173,7 +221,6 @@ bool GameManager::isOwnGoal(int attackedPlayerNum, char shipType)
 		|| attackedPlayerNum == B_NUM && shipType != tolower(shipType);
 }
 
-
 void GameManager::gameOver(int winner) const
 {
 	if (winner != -1) //We have a winner
@@ -189,7 +236,8 @@ int GameManager::runGame(IBattleshipGameAlgo* players[NUM_PLAYERS])
 {
 	if (!_isQuiet)
 	{
-		_gameBoard->draw();
+		int drawDelay = 15;
+		_gameBoard->draw(drawDelay);
 	}
 	if(printMode)
 	{
@@ -197,11 +245,6 @@ int GameManager::runGame(IBattleshipGameAlgo* players[NUM_PLAYERS])
 		printShipsMap(_shipsMap);
 	}
 
-	// Each player declares his next attack.
-	// Then, his enemy executes the attack and returns the AttackResult.
-	// If the player hits an enemy's ship, he gets another turn
-	// If the player make an own goal, he doesn't get another turn
-	// Game is over once a player loses all his ships, or all attackes were taken.
 	int winner = -1;
 	//finishedAttacks[i] is true iff players[i] finished all his attacks
 	bool finishedAttacks[NUM_PLAYERS] = { false,false };
