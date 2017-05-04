@@ -18,6 +18,7 @@
 #define EMPTY ""
 #define SUCCESS 0
 #define ERROR -1
+#define INVALID_ATTACK {-1,-1}
 
 //Constructor
 PredictedPlayer::PredictedPlayer(int playerNum)
@@ -25,7 +26,7 @@ PredictedPlayer::PredictedPlayer(int playerNum)
 	_playerNum = playerNum;
 	_attackFilePath = EMPTY;
 	_playerAttacks = {};
-	_attackPosition = 0;
+	_attackPosition = -1;
 }
 
 //Destructor
@@ -52,9 +53,7 @@ bool PredictedPlayer::init(const std::string& path)
 	{
 		return false; // Failed to get an attack file
 	}
-
 	getAttacksFromFile(); // Fill _playerAttacks vector with all his attacks
-
 	return true;
 }
 
@@ -78,11 +77,12 @@ void PredictedPlayer::SetAttackFilePath(int playerNum, const string& dirPath)
 
 std::pair<int, int> PredictedPlayer::attack()
 {
-	if (++_attackPosition >= _playerAttacks.size())
+	pair<int,int> attack = INVALID_ATTACK;
+	if (++_attackPosition < _playerAttacks.size())
 	{
-		return { -1,-1 }; // No more attacks
+		attack = _playerAttacks[_attackPosition];
 	}
-	return _playerAttacks[_attackPosition];
+	return attack;
 }
 
 
@@ -110,11 +110,9 @@ void PredictedPlayer::getAttacksFromFile()
 		{
 			continue;
 		}
-		//Push current valid attack into _playerAttacks vector:
-		_playerAttacks.push_back(attack);
+		_playerAttacks.push_back(attack); //Push current valid attack into _playerAttacks vector
 	}
-	//Finished inserting all attacks into _playerAttacks vector:
-	attackFile.close();
+	attackFile.close(); //Finished inserting all attacks into _playerAttacks vector
 }
 
 
@@ -193,7 +191,7 @@ pair<int, int> PredictedPlayer::getAttackPair(string& line) const
 
 	// Valid attack:
 	attack.first = i;
-	attack.first = j;
+	attack.second = j;
 	return attack;
 }
 

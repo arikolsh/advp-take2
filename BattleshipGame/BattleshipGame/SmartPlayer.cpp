@@ -8,12 +8,14 @@
 
 #define EMPTY_CELL '_'
 #define MARKED_CELL 'x'
+#define INVALID_ATTACK { -1 , -1 } 
+#define START_POINT { 1 , 1 }
 #define A_NUM 0
 #define B_NUM 0
 
 
 //Constructor
-SmartPlayer::SmartPlayer(int playerNum) : _playerNum(playerNum) {}
+SmartPlayer::SmartPlayer(int playerNum) : _playerNum(playerNum), _attack({-1,-1}) {}
 
 //Destructor
 SmartPlayer::~SmartPlayer()
@@ -26,6 +28,7 @@ void SmartPlayer::setBoard(int player, const char** board, int numRows, int numC
 	_rows = numRows, _cols = numCols;
 	copyBoard(board); // Copy all player's ships to _board
 	markPotentialHits(); // Mark all cells that are a "potential hit" (might hold an opponent ship)
+	_pos = START_POINT;
 	printBoard(false);
 }
 
@@ -121,8 +124,44 @@ bool SmartPlayer::init(const std::string& path)
 
 std::pair<int, int> SmartPlayer::attack()
 {
-	return{ 1,1 };
-	//return _playerAttacks[_attackIndex];
+	//Find next marked cell:
+	char cell;
+	_attack = INVALID_ATTACK;
+	if (_pos.first == -1) // Finished attacks
+	{
+		return _attack;
+	}
+	for (int i = _pos.first; i < _rows + 1; i++)
+	{
+		for (int j = _pos.second; j < _cols + 1; j++)
+		{
+			cell = _board[i][j];
+			if (cell == MARKED_CELL) //Found next attack
+			{
+				_attack = { i, j };
+				updatePosition(i,j);
+				break;
+			}
+		}
+	}
+	return _attack;
+}
+
+
+void SmartPlayer::updatePosition(int i, int j)
+{
+	if (i < _rows+1 && j < _cols)
+	{
+		_pos = { i, j + 1 }; // Next column
+		return;
+	}
+	if(i < _rows && j == _cols) // Next line
+	{
+		_pos = { i + 1, j };
+		return;
+	}
+	// Finished attacks
+	_pos = INVALID_ATTACK;
 }
 
 

@@ -34,9 +34,8 @@ private:
 
 	// Private fields:
 	int _playerNum;
-	vector<pair <int, int>> _playerAttacks; //A vector with all player attacks
-	pair<int, int> _attackPosition; //Position in board
-	int _attackIndex; //Next attack index in _playerAttacks vector
+	pair<int, int> _attack; //Next point to attack
+	pair<int, int> _pos; //Points on player's board
 	vector<string> _board; //Holds all player's ships + 'x' mark for every cell that shouldn't be attacked
 	int _rows, _cols;
 
@@ -44,5 +43,6 @@ private:
 	void copyBoard(const char** board);
 	void SmartPlayer::markPotentialHits();
 	bool potentialHit(int row, int col); //check if the cell is empty and in addition check :down, up, left, right, upper left, upper right, down left, down right
+	void SmartPlayer::updatePosition(int i, int j);
 	void SmartPlayer::printBoard(bool fullPrint) const;
 };
