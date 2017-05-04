@@ -37,10 +37,6 @@ bool NaivePlayer::isIsolated(int row, int col)
 		_board[row - 1][col] == EMPTY_CELL && // up
 		_board[row][col - 1] == EMPTY_CELL && // left
 		_board[row][col + 1] == EMPTY_CELL);// right
-		//_board[row - 1][col - 1] == EMPTY_CELL && // upper left
-		//_board[row - 1][col + 1] == EMPTY_CELL && // upper right
-		//_board[row + 1][col - 1] == EMPTY_CELL && // down left
-		//_board[row + 1][col + 1] == EMPTY_CELL);  // down right
 }
 
 bool NaivePlayer::init(const std::string & path)
