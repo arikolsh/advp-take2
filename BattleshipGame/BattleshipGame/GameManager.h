@@ -32,6 +32,10 @@ private:
 	bool _isQuiet;
 	/*delay in milliseconds with each gui operation*/
 	int _delay;
+	/* Each player board is prepared in advance and hidden from the opponent!
+	* fillPlayerBoard gets the full board with both players ships,
+	* and fills the given player's board with his ships only. */
+	void fillMapWithShips();
 	/*return true if own goal*/
 	static bool isOwnGoal(int attackedPlayerNum, char shipType);
 };

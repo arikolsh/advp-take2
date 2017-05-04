@@ -56,14 +56,14 @@ int main(int argc, char* argv[])
 		if (playerBoardB == nullptr)
 		{
 			/* free resources */
-			GameBoard::freeBoard(playerBoardA, ROWS, COLS);
+			GameBoard::freeBoard(playerBoardA, ROWS);
 			return EXIT_FAILURE;
 		}
 
 		if(PrintMode)
 		{
 			cout << "Full board:" << endl;
-			game_board.printBoard(false);
+			game_board.printGameBoard();
 			printBoard(A_NUM, playerBoardA, COLS, ROWS);
 			printBoard(B_NUM, playerBoardB, COLS, ROWS);
 		}
@@ -83,12 +83,12 @@ int main(int argc, char* argv[])
 		if (players[A_NUM]->init(searchDir) == false)
 		{
 			/* free resources */
-			GameBoard::freeBoard(playerBoardA, ROWS, COLS);
-			GameBoard::freeBoard(playerBoardB, ROWS, COLS);
+			GameBoard::freeBoard(playerBoardA, ROWS);
+			GameBoard::freeBoard(playerBoardB, ROWS);
 			delete players[A_NUM];
 			return EXIT_FAILURE;
 		}
-		GameBoard::freeBoard(playerBoardA, ROWS, COLS); //Not needed once A has set his own board
+		GameBoard::freeBoard(playerBoardA, ROWS); //Not needed once A has set his own board
 
 		/* init player B */
 		players[B_NUM] = new PredictedPlayer();
@@ -97,12 +97,12 @@ int main(int argc, char* argv[])
 		if (players[B_NUM]->init(searchDir) == false)
 		{
 			/* free resources */
-			GameBoard::freeBoard(playerBoardB, ROWS, COLS);
+			GameBoard::freeBoard(playerBoardB, ROWS);
 			delete players[A_NUM];
 			delete players[B_NUM];
 			return EXIT_FAILURE;
 		}
-		GameBoard::freeBoard(playerBoardB, ROWS, COLS); //Not needed once B has set his own board
+		GameBoard::freeBoard(playerBoardB, ROWS); //Not needed once B has set his own board
 
 		/* game execution */
 		int winner = manager.runGame(players);
@@ -131,12 +131,10 @@ int main(int argc, char* argv[])
 		/* init game board data structure */
 		GameBoard game_board(ROWS, COLS);
 		game_board.init(inputFiles[0].c_str());
-		//game_board.printBoard(false);
 
 		/* get player boards */
 		char** playerBoardA = game_board.getPlayerBoard(A_NUM);
 		if (playerBoardA == nullptr) { return EXIT_FAILURE; }
-		//GameBoard::printBoard(playerBoardA,ROWS+2,COLS+2,false);
 		game_board.draw();
 	}
 	return EXIT_SUCCESS;
