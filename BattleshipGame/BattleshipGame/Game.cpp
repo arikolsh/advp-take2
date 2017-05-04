@@ -6,8 +6,8 @@
 #include "GameManager.h"
 #include <iostream>
 
-
-#include "SmartPlayer.h"
+//! ! ! ! ! ! ! ! ! ! ! !ERASE PLAYER HEADERS AT THE END ! ! ! ! ! ! ! ! ! ! ! ! ! !
+#include "SmartPlayer.h"  
 #include "PredictedPlayer.h"
 
 
@@ -21,44 +21,9 @@ using namespace std;
 
 bool PrintMode = false;
 
-void printBoard(int player, char** board, int rows, int cols)
-{
-	cout << endl << "Player " << player << " Board:" << endl;
-	for (int i = 0; i < rows; i++) {
-		for (int j = 0; j < cols; j++) {
-			cout << board[i][j];
-		}
-		cout << endl;
-	}
-	cout << endl;
-}
+void printBoard(int player, char** board, int rows, int cols);
 
-
-void getArgs(int argc, char** argv, bool& isQuiet, int& delay, string& searchDir)
-{
-	vector<string> argsVector(argv, argv + argc);
-	for (int i = 1; i < argc; i++)
-	{
-
-		if (argsVector[i] == "-quiet")
-		{
-			isQuiet = true;
-		}
-		else if (argsVector[i] == "-delay")
-		{
-			delay = stoi(argsVector[++i]);
-		}
-		else
-		{
-			searchDir = argsVector[i];
-			cout << searchDir;
-		}
-	}
-	if(isQuiet)
-	{
-		delay = 0;
-	}
-}
+void getArgs(int argc, char** argv, bool& isQuiet, int& delay, string& searchDir);
 
 int main(int argc, char* argv[])
 {
@@ -176,4 +141,45 @@ int main(int argc, char* argv[])
 	}
 	return EXIT_SUCCESS;
 
+}
+
+
+
+void printBoard(int player, char** board, int rows, int cols)
+{
+	cout << endl << "Player " << player << " Board:" << endl;
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols; j++) {
+			cout << board[i][j];
+		}
+		cout << endl;
+	}
+	cout << endl;
+}
+
+
+void getArgs(int argc, char** argv, bool& isQuiet, int& delay, string& searchDir)
+{
+	vector<string> argsVector(argv, argv + argc);
+	for (int i = 1; i < argc; i++)
+	{
+
+		if (argsVector[i] == "-quiet")
+		{
+			isQuiet = true;
+		}
+		else if (argsVector[i] == "-delay")
+		{
+			delay = stoi(argsVector[++i]);
+		}
+		else
+		{
+			searchDir = argsVector[i];
+			cout << searchDir;
+		}
+	}
+	if (isQuiet)
+	{
+		delay = 0;
+	}
 }
