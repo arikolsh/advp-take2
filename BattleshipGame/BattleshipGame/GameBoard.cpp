@@ -154,8 +154,8 @@ void GameBoard::draw(int delay) const
 
 void GameBoard::printGameBoard()
 {
-	for (int i = 1; i < _rows - 2; i++) {
-		for (int j = 1; j < _rows - 2; j++) {
+	for (int i = 1; i < _rows - 1; i++) {
+		for (int j = 1; j < _rows - 1; j++) {
 			cout << _fullBoard[i][j];
 		}
 		cout << endl;
