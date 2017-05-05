@@ -7,7 +7,6 @@ public:
 	explicit GameManager(GameBoard* gameBoard, bool isQuiet, int delay);
 	int getPlayerScore(int player) const;
 	bool isPlayerDefeated(int player) const;
-	int getCurrentPlayer() const;
 	static void printShipsMap(map<pair<int, int>, pair<shared_ptr<Ship>, bool>>& shipsMap);
 	/* Search for the attack point in shipsMap:
 	* If attack point is not in map --> it's a Miss!
