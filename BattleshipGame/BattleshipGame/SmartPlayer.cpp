@@ -1,9 +1,11 @@
 #include "SmartPlayer.h"
 #include "IBattleshipGameAlgoV2.h"
+#include "ship.h"
+
 #include <algorithm>
 #include <vector>
-#include "ship.h"
 #include <iostream>
+#include <utility>
 
 #define EMPTY_CELL '-'
 #define MARKED_CELL 'x'
@@ -15,7 +17,9 @@
 bool print_mode = true;
 
 //Constructor
-SmartPlayer::SmartPlayer() : _attack({-1,-1}) {}
+SmartPlayer::SmartPlayer() : _attacking_state(Routine), _attack({-1,-1})
+{
+}
 
 //Destructor
 SmartPlayer::~SmartPlayer()
@@ -127,8 +131,114 @@ bool SmartPlayer::potentialHit(int row, int col)
 
 void SmartPlayer::notifyOnAttackResult(int player, int row, int col, AttackResult result)
 {
+
+	//remember to check which player attacked
+	//check own goal
+
+	_lastAttack = { row, col, result , player };
+
+	if(isOwnGoal(row, col, player))
+	{
+		return; // Should never enter this "if" block
+	}
+
+	if (player == _playerNum) // This player attacked
+	{
+		switch (result)
+		{
+		case AttackResult::Miss:
+			switch (_attacking_state)
+			{
+			case Routine: // Keep attacking in Routine state until getting a 'Hit'
+				//_attacking_state = Routine; 
+				break;
+			case Hunting_x: // Failed to hit on X direction --> Try to sink on Y direction
+				_attacking_state = Hunting_y;
+				break;
+			case Hunting_y: // Failed to sink on both X and Y directions --> Back to Routine state
+				_attacking_state = Routine;
+				break;
+			}
+			break;
+
+		case AttackResult::Hit:
+			switch (_attacking_state)
+			{
+			case Routine:
+				_attacking_state = Hunting_x; // Try to attack on X direction in order to sink this ship
+				break;
+			case Hunting_x:
+				//_attacking_state = Hunting_x; // Found ship direction to be X --> attack until sink
+				break;
+			case Hunting_y: // Found ship direction to be Y --> attack until sink
+				//_attacking_state = Hunting_y;
+				break;
+			}
+			break;
+
+		case AttackResult::Sink:
+			switch (_attacking_state)
+			{
+			case Routine:
+				//_attacking_state = Routine; // Update cells arround the sinked ship and keep attacking in Routine state
+				break;
+			case Hunting_x:
+				_attacking_state = Routine; // Succeeded to sink ship on X direction --> return to Routine state
+				break;
+			case Hunting_y: // Succeeded to sink ship on Y direction --> return to Routine state
+				_attacking_state = Routine;
+				break;
+			}
+			break;
+		}
+	}
+
+	else // Opponent attacked this player
+	{
+		switch (result)
+		{
+		case AttackResult::Miss:
+			// Smile and wave :)
+			break;
+
+		case AttackResult::Hit:
+			// If opponent hit his own ship, it revealed a target that smart player will try to sink:
+			if (isOpponentOwnGoal(row, col, player))
+			{
+				_attacking_state = Hunting_x; // Try to sink ship on X direction
+			}
+			else
+			{
+				//Opponent hit a smart player's ship, nothing too do..
+			}
+			break;
+
+		case AttackResult::Sink:
+			// If opponent sank his own ship, update valid attack spots:
+			if (isOpponentOwnGoal(row, col, player))
+			{
+				/////////////////////;
+			}
+			break;
+		}
+	}
+
+
 }
 
+bool SmartPlayer::isOwnGoal(int row, int col, int player) const
+{
+	return player == _playerNum && 
+		_board[row + 1][col + 1] != EMPTY_CELL && 
+		_board[row + 1][col + 1] != MARKED_CELL;
+}
+
+bool SmartPlayer::isOpponentOwnGoal(int row, int col, int player) const
+{
+	return player != _playerNum &&
+		(_board[row + 1][col + 1] == EMPTY_CELL ||
+		_board[row + 1][col + 1] == MARKED_CELL);
+}
 
 bool SmartPlayer::init(const std::string& path)
 {

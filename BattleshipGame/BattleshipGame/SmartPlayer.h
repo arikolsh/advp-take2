@@ -2,6 +2,7 @@
 
 #include "IBattleshipGameAlgoV2.h"
 #include <vector>
+#include <tuple>
 
 using namespace std;
 
@@ -32,6 +33,9 @@ public:
 
 private:
 
+	enum AttackingState { Routine, Hunting_x, Hunting_y };
+	AttackingState _attacking_state;
+	tuple<int, int, AttackResult, int> _lastAttack; // { row, col, result , player };
 	// Private fields:
 	int _playerNum;
 	pair<int, int> _attack; //Next point to attack
@@ -44,5 +48,7 @@ private:
 	void SmartPlayer::markPotentialHits();
 	bool potentialHit(int row, int col); //check if the cell is empty and in addition check :down, up, left, right, upper left, upper right, down left, down right
 	void SmartPlayer::updatePosition(int i, int j);
+	bool SmartPlayer::isOwnGoal(int row, int col, int player) const;
+	bool SmartPlayer::isOpponentOwnGoal(int row, int col, int player) const;
 	void SmartPlayer::printBoard(bool fullPrint) const;
 };
