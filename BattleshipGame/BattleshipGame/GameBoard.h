@@ -3,7 +3,7 @@
 #include <map>
 #include <memory>
 #include "Ship.h"
-#include "IBattleshipGameAlgoV2.h"
+#include "IBattleshipGameAlgo.h"
 using namespace std;
 class GameBoard {
 public:

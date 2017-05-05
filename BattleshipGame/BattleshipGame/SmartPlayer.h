@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IBattleshipGameAlgoV2.h"
+#include "IBattleshipGameAlgo.h"
 #include <vector>
 
 using namespace std;
