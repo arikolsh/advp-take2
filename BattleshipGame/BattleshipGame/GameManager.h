@@ -17,6 +17,15 @@ public:
 	* Else, return Hit. */
 	AttackResult executeAttack(int attackedPlayerNum, pair<int, int> attack);
 	void gameOver(int winner) const;
+	/*
+	* Each player declares his next attack.
+	* Then, his enemy executes the attack and returns the AttackResult.
+	* If the player hits an enemy's ship, he gets another turn
+	* If the player make an own goal, he doesn't get another turn
+	* Game is over once a player loses all his ships, or all attackes were taken.
+	* run game will run the flow of the game and eventually returns -1 if no winners or
+	* the number of the winner player.
+	*/
 	int runGame(IBattleshipGameAlgo * players[NUM_PLAYERS]);
 private: 
 	map<pair<int, int>, pair<shared_ptr<Ship>, bool>> _shipsMap;
@@ -32,6 +41,10 @@ private:
 	bool _isQuiet;
 	/*delay in milliseconds with each gui operation*/
 	int _delay;
+	/* Each player board is prepared in advance and hidden from the opponent!
+	* fillPlayerBoard gets the full board with both players ships,
+	* and fills the given player's board with his ships only. */
+	void fillMapWithShips();
 	/*return true if own goal*/
 	static bool isOwnGoal(int attackedPlayerNum, char shipType);
 };

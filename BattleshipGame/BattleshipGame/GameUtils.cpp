@@ -33,7 +33,7 @@
 int GameUtils::getInputFiles(vector<string> & inputFiles, vector<string> & messages, vector<string> & DLLNames, string searchDir)
 {
 	int op_res = fetchInputFiles(inputFiles, messages, DLLNames, searchDir);
-	if (op_res == 1)
+	if (op_res == FAILURE)
 	{
 		cout << "Error: failed to fetch input files from super-file container" << endl;
 		return FAILURE;
