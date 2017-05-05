@@ -1,5 +1,5 @@
 #include "SmartPlayer.h"
-#include "IBattleshipGameAlgoV2.h"
+#include "IBattleshipGameAlgo.h"
 
 #include <algorithm>
 #include <vector>
