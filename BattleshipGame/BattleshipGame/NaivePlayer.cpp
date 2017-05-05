@@ -10,7 +10,6 @@ NaivePlayer::NaivePlayer()
 	_attackPosition = 0;
 	_rows = 0;
 	_cols = 0;
-	_attackPosition = 0;
 }
 
 void NaivePlayer::setBoard(int player, const char ** board, int numRows, int numCols)
