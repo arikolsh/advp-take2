@@ -36,6 +36,7 @@ private:
 	enum AttackingState { Routine, Hunting_x, Hunting_y };
 	AttackingState _attacking_state;
 	tuple<int, int, AttackResult, int> _lastAttack; // { row, col, result , player };
+	bool _finishedAttacks;
 	// Private fields:
 	int _playerNum;
 	pair<int, int> _attack; //Next point to attack

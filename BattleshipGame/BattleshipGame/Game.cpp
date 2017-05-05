@@ -78,8 +78,8 @@ int main(int argc, char* argv[])
 		//todo: get algorithms
 
 		/* init player A */
-		players[A_NUM] = new NaivePlayer();
-		//players[A_NUM] = new SmartPlayer();
+		//ayers[A_NUM] = new NaivePlayer();
+		players[A_NUM] = new SmartPlayer();
 		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), ROWS, COLS);
 		if (players[A_NUM]->init(searchDir) == false)
 		{
@@ -92,8 +92,8 @@ int main(int argc, char* argv[])
 		GameBoard::destroyBoard(playerBoardA, ROWS); //Not needed once A has set his own board
 
 		/* init player B */
-		players[B_NUM] = new NaivePlayer();
-		//players[B_NUM] = new SmartPlayer();
+		//players[B_NUM] = new NaivePlayer();
+		players[B_NUM] = new SmartPlayer();
 		players[B_NUM]->setBoard(B_NUM, const_cast<const char **>(playerBoardB), ROWS, COLS);
 		if (players[B_NUM]->init(searchDir) == false)
 		{
