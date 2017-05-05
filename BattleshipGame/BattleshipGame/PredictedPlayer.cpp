@@ -1,5 +1,5 @@
 #include "PredictedPlayer.h"
-#include "IBattleshipGameAlgoV2.h"
+#include "IBattleshipGameAlgo.h"
 #include <iostream>
 #include <algorithm>
 #include <sstream>
@@ -21,11 +21,8 @@
 #define INVALID_ATTACK {-1,-1}
 
 //Constructor
-PredictedPlayer::PredictedPlayer()
+PredictedPlayer::PredictedPlayer(): _playerNum(-1), _attackFilePath(EMPTY),_playerAttacks({}),_attackPosition(-1)
 {
-	_attackFilePath = EMPTY;
-	_playerAttacks = {};
-	_attackPosition = -1;
 }
 
 //Destructor

@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
 		GameBoard::destroyBoard(playerBoardA, ROWS); //Not needed once A has set his own board
 
 		/* init player B */
-		players[B_NUM] = new NaivePlayer();
+		players[B_NUM] = new PredictedPlayer();
 		//players[B_NUM] = new SmartPlayer();
 		players[B_NUM]->setBoard(B_NUM, const_cast<const char **>(playerBoardB), ROWS, COLS);
 		if (players[B_NUM]->init(searchDir) == false)

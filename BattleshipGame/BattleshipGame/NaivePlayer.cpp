@@ -4,12 +4,8 @@
 
 using namespace std;
 
-NaivePlayer::NaivePlayer()
+NaivePlayer::NaivePlayer(): _playerNum(-1),_attackPosition(0),_rows(0),_cols(0)
 {
-	//manual initialization isn't needed for _player_attcks and _board (auto initialization for vectors)
-	_attackPosition = 0;
-	_rows = 0;
-	_cols = 0;
 }
 
 void NaivePlayer::setBoard(int player, const char ** board, int numRows, int numCols)

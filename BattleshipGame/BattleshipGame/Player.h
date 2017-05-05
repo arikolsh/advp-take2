@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IBattleshipGameAlgoV2.h"
+#include "IBattleshipGameAlgo.h"
 #include <map>
 #include "Ship.h"
 #include "GameUtils.h"
