@@ -47,14 +47,14 @@ private:
 
 	// Private functions:
 	void copyBoard(const char** board);
-	void SmartPlayer::markPotentialHits();
+	void markPotentialHits();
 	bool potentialHit(int row, int col); //check if the cell is empty and in addition check :down, up, left, right, upper left, upper right, down left, down right
-	void SmartPlayer::updatePosition(int i, int j);
-	bool SmartPlayer::isOpponentOwnGoal(int row, int col, int player) const;
-	void emptySurroundingCells(int row, int col);
+	void updatePosition(int i, int j);
+	bool isOpponentOwnGoal(int row, int col, int player) const;
+	void emptySurroundingCells(int row, int col, int y_limit, int x_limit);
 	pair<int, int> attackRoutine();
 	pair<int, int> attackHuntingX();
 	pair<int, int> attackHuntingY();
 	static bool shipBelongsToPlayer(char c, int player);
-	void SmartPlayer::printBoard(bool fullPrint) const;
+	void printBoard(bool fullPrint) const;
 };

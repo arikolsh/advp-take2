@@ -176,7 +176,7 @@ pair<int, int> SmartPlayer::attackHuntingX()
 	cout << "Player " << _playerNum << " is in Hunting_X State" << endl;
 	int i = get<0>(_lastAttack); // 'get' returns a refrence
 	int j = get<1>(_lastAttack);
-	if (_x_directionFailed || j >= _cols) // Failed attacking in X direction
+	if (_x_directionFailed || j >= _cols || _board[i][j+1] != MARKED_CELL) // cannot attack in X direction
 	{
 		if (!_y_directionFailed && i <= _rows)
 		{
@@ -193,7 +193,7 @@ pair<int, int> SmartPlayer::attackHuntingY()
 	cout << "Player " << _playerNum << " is in Hunting_Y State" << endl;
 	int i = get<0>(_lastAttack);
 	int j = get<1>(_lastAttack); 
-	if (i >= _rows || _y_directionFailed)
+	if (i >= _rows || _y_directionFailed || _board[i+1][j] != MARKED_CELL) // cannot attack in Y direction
 	{
 		return attackRoutine();
 	}
@@ -242,14 +242,10 @@ void SmartPlayer::updatePosition(int i, int j)
 
 void SmartPlayer::notifyOnAttackResult(int player, int row, int col, AttackResult result)
 {
-	// If attacked point is not a ship that belongs to this player, mark cell as empty to avoid attacking it again
-	if (shipBelongsToPlayer(_board[row][col], _playerNum) == false)
+	// Unmark attacked cell to avoid attacking it again:
+	if (_board[row][col] == MARKED_CELL)
 	{
-		_board[row][col] = EMPTY_CELL; // Avoid attacking this point again
-	}
-	if (result == AttackResult::Sink)
-	{
-		emptySurroundingCells(row, col); // Avoid attacking surrounding cells
+		_board[row][col] = EMPTY_CELL; 
 	}
 
 	if (player == _playerNum) // This player attacked
@@ -289,12 +285,26 @@ void SmartPlayer::notifyOnAttackResult(int player, int row, int col, AttackResul
 			case Hunting_x: // Found ship direction to be X --> attack until sink
 				_x_directionFailed = false;
 				_y_directionFailed = true; // Ship isn't in Y direction
+				//clear surrounding cells in y direction
+				if(print_mode)
+				{
+					cout << "player " << _playerNum << " clearing surrounding cells in Y direction" << endl;
+				}
+				emptySurroundingCells(row, col, 1, 0);
+				//update last attack to be the current hit:
 				_lastAttack = { row, col , result , player };
 				//_attacking_state = Hunting_x;
 				break;
 			case Hunting_y: // Found ship direction to be Y --> attack until sink
 				_x_directionFailed = true; // Ship isn't in X direction
 				_y_directionFailed = false;
+				//clear surrounding cells in x direction:
+				if (print_mode)
+				{
+					cout << "player " << _playerNum << " clearing surrounding cells in X direction" << endl;
+				}
+				emptySurroundingCells(row, col, 0, 1);
+				//update last attack to be the current hit:
 				_lastAttack = { row, col , result , player };
 				//_attacking_state = Hunting_y;
 				break;
@@ -302,14 +312,23 @@ void SmartPlayer::notifyOnAttackResult(int player, int row, int col, AttackResul
 			break;
 
 		case AttackResult::Sink:
+			if (print_mode)
+			{
+				cout << "player " << _playerNum << " clearing surrounding cells after a 'Sink'" << endl;
+			}
+			emptySurroundingCells(row, col, 1, 1); // Avoid attacking cells in the surroundings of (row,col)
 			switch (_attacking_state)
 			{
 			case Routine: // Keep attacking in Routine state until next 'Hit'
 				break;
 			case Hunting_x: // Succeeded to sink ship on X direction --> return to Routine state
+				//clear cells arround previous hit
+				emptySurroundingCells(row, col-1, 1, 1); // Avoid attacking surrounding cells
 				_attacking_state = Routine; 
 				break;
 			case Hunting_y: // Succeeded to sink ship on Y direction --> return to Routine state
+				//clear cells arround previous hit
+				emptySurroundingCells(row-1, col, 1, 1); // Avoid attacking surrounding cells
 				_attacking_state = Routine;
 				break;
 			}
@@ -334,18 +353,22 @@ void SmartPlayer::notifyOnAttackResult(int player, int row, int col, AttackResul
 				{
 					cout << "Opponent performed an 'Own Goal', smart player will try to sink this ship" << endl;
 				}
+
 				/* Remark:
 				 * If opponent hit his ship (own goal) we want to sink it 
 				 * but we don’t know where it begins!!!
-				 * In this solution we start only from that point right or down (and not left or up)
+				 * In this solution we start only from that point right or down (and not left or up) and
+				 * anyway we will get to the other cells on the future routine attacks
 				 * We can think of a new function: attackAfterOwnGoal() that will first attack x and then y, 
-				 * but will identify the direction and attack until sinking - this is risky and hard */
-				return;
+				 * but will identify the direction and attack until sinking */
+				//return;
 			}
 			else  //_attacking_state = Hunting_x or Hunting_y
 			{
+				
 				//Player is already busy hunting another ship
-				//Haven't decided yet what to do in this case...
+				
+				//In this case we can save point to a queue and attack it later
 			}
 		}
 	}
@@ -360,18 +383,21 @@ bool SmartPlayer::isOpponentOwnGoal(int row, int col, int player) const
 }
 
 
-void SmartPlayer::emptySurroundingCells(int row, int col)
+void SmartPlayer::emptySurroundingCells(int row, int col, int y_limit, int x_limit)
 {
-	for (int i = -1; i <= 1; i++)
+	for (int i = -1; i <= y_limit; i++)
 	{
-		for (int j = -1; j <= 1; j++)
+		for (int j = -1; j <= x_limit; j++)
 		{
-			//Skip the center and diagonals, as well as ships that belong to this player
-			if (abs(i) == abs(j) || shipBelongsToPlayer(_board[row][col], _playerNum))
+			//Skip the center and diagonals, and empty cells that were marked for attack
+			if (abs(i) != abs(j) && _board[row + i][col + j] == MARKED_CELL)
 			{
-				continue;
-			} 
-			_board[row + i][col + j] = EMPTY_CELL;
+				_board[row + i][col + j] = EMPTY_CELL; // Unmark cell
+				if(print_mode)
+				{
+					cout << "unmarked cell " << row + i << "," << col + j << endl;
+				}
+			}
 		}
 	}
 }
