@@ -78,9 +78,9 @@ int main(int argc, char* argv[])
 		//todo: get algorithms
 
 		/* init player A */
-		//players[A_NUM] = new PredictedPlayer();
+		players[A_NUM] = new PredictedPlayer();
 		//players[A_NUM] = new NaivePlayer();
-		players[A_NUM] = new SmartPlayer();
+		//players[A_NUM] = new SmartPlayer();
 		players[A_NUM]->setBoard(A_NUM, const_cast<const char **>(playerBoardA), ROWS, COLS);
 		if (players[A_NUM]->init(searchDir) == false)
 		{

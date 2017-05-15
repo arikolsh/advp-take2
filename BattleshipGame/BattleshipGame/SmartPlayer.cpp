@@ -21,9 +21,17 @@
 
 bool print_mode = true;
 
+IBattleshipGameAlgo* GetAlgorithm()
+{
+	return new SmartPlayer(); // Return a smart player instance
+}
+
 //Constructor
 SmartPlayer::SmartPlayer()
 {
+	_playerNum = -1;
+	_rows = 0;
+	_cols = 0;
 	_pos = START_POINT;
 	_finishedAttacks = false;
 	_attack = { -1,-1 };
@@ -49,7 +57,7 @@ void SmartPlayer::setBoard(int player, const char** board, int numRows, int numC
 	_rows = numRows, _cols = numCols;
 	copyBoard(board); // Copy all player's ships to _board
 	markPotentialHits(); // Mark all cells that are a "potential hit" (might hold an opponent ship)
-	if(print_mode)
+	if (print_mode)
 	{
 		cout << endl << "smart player: " << _playerNum << endl;
 		printBoard(false);
@@ -93,7 +101,7 @@ void SmartPlayer::markPotentialHits()
 	{
 		for (int j = 1; j < _cols + 1; j++)
 		{
-			if(potentialHit(i, j))
+			if (potentialHit(i, j))
 			{
 				_board[i][j] = MARKED_CELL;
 			}
@@ -104,12 +112,12 @@ void SmartPlayer::markPotentialHits()
 //check the cell itself and in addition check :down, up, left, right, upper left, upper right, down left, down right
 bool SmartPlayer::potentialHit(int row, int col)
 {
-	for (int i = -1; i < 2; i++)
+	for (int i = -1; i <= 1; i++)
 	{
-		for (int j = -1; j < 2; j++)
+		for (int j = -1; j <= 1; j++)
 		{
 			if (abs(i) == abs(j) && i != 0) { continue; } //Skip the diagonals
-			if (_board[row + i][col + j] != EMPTY_CELL 
+			if (_board[row + i][col + j] != EMPTY_CELL
 				&& _board[row + i][col + j] != MARKED_CELL)
 			{
 				return false; //Found one of the own player's ship in the surroundings
@@ -121,7 +129,7 @@ bool SmartPlayer::potentialHit(int row, int col)
 
 
 /* Compute and return the next smart attack move according to the _attacking_state.
- * If Finished attacking all potential points return {-1,-1}. */
+* If Finished attacking all potential points return {-1,-1}. */
 std::pair<int, int> SmartPlayer::attack()
 {
 	if (_finishedAttacks) { return INVALID_ATTACK; }
@@ -145,7 +153,9 @@ std::pair<int, int> SmartPlayer::attack()
 * If Finished attacking all potential points return {-1,-1}. */
 pair<int, int> SmartPlayer::attackRoutine()
 {
-	cout << "Player " << _playerNum << " is in Routine State" << endl;
+	if (print_mode) {
+		cout << "Player " << _playerNum << " is in Routine State" << endl;
+	}
 	int i = _pos.first, j = _pos.second;
 	while (i <= _rows)
 	{
@@ -173,10 +183,12 @@ pair<int, int> SmartPlayer::attackRoutine()
 pair<int, int> SmartPlayer::attackHuntingX()
 {
 	//return attackRoutine();
-	cout << "Player " << _playerNum << " is in Hunting_X State" << endl;
+	if (print_mode) {
+		cout << "Player " << _playerNum << " is in Hunting_X State" << endl;
+	}
 	int i = get<0>(_lastAttack); // 'get' returns a refrence
 	int j = get<1>(_lastAttack);
-	if (_x_directionFailed || j >= _cols || _board[i][j+1] != MARKED_CELL) // cannot attack in X direction
+	if (_x_directionFailed || j >= _cols || _board[i][j + 1] != MARKED_CELL) // cannot attack in X direction
 	{
 		if (!_y_directionFailed && i <= _rows)
 		{
@@ -184,27 +196,29 @@ pair<int, int> SmartPlayer::attackHuntingX()
 		}
 		return attackRoutine(); // Switch to Routin state attack
 	}
-	return { i, j + 1 }; // Attack in X direction (next cell to the right)
+	return{ i, j + 1 }; // Attack in X direction (next cell to the right)
 }
 
 pair<int, int> SmartPlayer::attackHuntingY()
 {
 	//return attackRoutine();
-	cout << "Player " << _playerNum << " is in Hunting_Y State" << endl;
+	if (print_mode) {
+		cout << "Player " << _playerNum << " is in Hunting_Y State" << endl;
+	}
 	int i = get<0>(_lastAttack);
-	int j = get<1>(_lastAttack); 
-	if (i >= _rows || _y_directionFailed || _board[i+1][j] != MARKED_CELL) // cannot attack in Y direction
+	int j = get<1>(_lastAttack);
+	if (i >= _rows || _y_directionFailed || _board[i + 1][j] != MARKED_CELL) // cannot attack in Y direction
 	{
 		return attackRoutine();
 	}
-	return { i + 1, j};
+	return{ i + 1, j };
 }
 
 
 bool SmartPlayer::shipBelongsToPlayer(char c, int player)
 {
 	char shipTypes[NUM_SHIP_TYPES] = { RUBBER_BOAT, ROCKET_SHIP, SUBMARINE, DESTROYER };
-	
+
 	if (player == A_NUM) // Convert types to upper case
 	{
 		for (int i = 0; i < NUM_SHIP_TYPES; i++)
@@ -235,7 +249,7 @@ void SmartPlayer::updatePosition(int i, int j)
 	}
 	else // i == _rows && j == _cols --> Reaching here means player finished attacks
 	{
-		_finishedAttacks = true; 
+		_finishedAttacks = true;
 	}
 }
 
@@ -245,7 +259,7 @@ void SmartPlayer::notifyOnAttackResult(int player, int row, int col, AttackResul
 	// Unmark attacked cell to avoid attacking it again:
 	if (_board[row][col] == MARKED_CELL)
 	{
-		_board[row][col] = EMPTY_CELL; 
+		_board[row][col] = EMPTY_CELL;
 	}
 
 	if (player == _playerNum) // This player attacked
@@ -285,15 +299,15 @@ void SmartPlayer::notifyOnAttackResult(int player, int row, int col, AttackResul
 			case Hunting_x: // Found ship direction to be X --> attack until sink
 				_x_directionFailed = false;
 				_y_directionFailed = true; // Ship isn't in Y direction
-				//clear surrounding cells in y direction
-				if(print_mode)
+										   //clear surrounding cells in y direction
+				if (print_mode)
 				{
 					cout << "player " << _playerNum << " clearing surrounding cells in Y direction" << endl;
 				}
-				emptySurroundingCells(row, col, 1, 0);
+				emptySurroundingCells(row, col, -1, 1, 0, 0);
 				//update last attack to be the current hit:
 				_lastAttack = { row, col , result , player };
-				//_attacking_state = Hunting_x;
+				_attacking_state = Hunting_x;
 				break;
 			case Hunting_y: // Found ship direction to be Y --> attack until sink
 				_x_directionFailed = true; // Ship isn't in X direction
@@ -303,7 +317,7 @@ void SmartPlayer::notifyOnAttackResult(int player, int row, int col, AttackResul
 				{
 					cout << "player " << _playerNum << " clearing surrounding cells in X direction" << endl;
 				}
-				emptySurroundingCells(row, col, 0, 1);
+				emptySurroundingCells(row, col, 0, 0, -1, 1);
 				//update last attack to be the current hit:
 				_lastAttack = { row, col , result , player };
 				//_attacking_state = Hunting_y;
@@ -316,30 +330,29 @@ void SmartPlayer::notifyOnAttackResult(int player, int row, int col, AttackResul
 			{
 				cout << "player " << _playerNum << " clearing surrounding cells after a 'Sink'" << endl;
 			}
-			emptySurroundingCells(row, col, 1, 1); // Avoid attacking cells in the surroundings of (row,col)
+			emptySurroundingCells(row, col, -1, 1, -1, 1); // Avoid attacking cells in the surroundings of (row,col)
 			switch (_attacking_state)
 			{
 			case Routine: // Keep attacking in Routine state until next 'Hit'
 				break;
 			case Hunting_x: // Succeeded to sink ship on X direction --> return to Routine state
-				//clear cells arround previous hit
-				emptySurroundingCells(row, col-1, 1, 1); // Avoid attacking surrounding cells
-				_attacking_state = Routine; 
+							//clear cells arround previous hit
+				emptySurroundingCells(row, col - 1, -1, 1, -1, 1); // Avoid attacking surrounding cells
+				_attacking_state = Routine;
 				break;
 			case Hunting_y: // Succeeded to sink ship on Y direction --> return to Routine state
-				//clear cells arround previous hit
-				emptySurroundingCells(row-1, col, 1, 1); // Avoid attacking surrounding cells
+							//clear cells arround previous hit
+				emptySurroundingCells(row - 1, col, -1, 1, -1, 1); // Avoid attacking surrounding cells
 				_attacking_state = Routine;
 				break;
 			}
 			break;
 		}
 	}
-
+	
 	else { // Opponent attacked --> Only the 'Own Goal' case matters 
-		  // (If opponent miss or hit one of this player's ship, got nothing to do)
-		
-		// If opponent hit his own ship, it revealed a target that smart player will try to sink:
+		   // (If opponent miss or hit one of this player's ship, got nothing to do)
+		   // If opponent hit his own ship, it revealed a target that smart player will try to sink:
 		if (result == AttackResult::Hit && isOpponentOwnGoal(row, col, player))
 		{
 			if (_attacking_state == Routine)
@@ -353,22 +366,6 @@ void SmartPlayer::notifyOnAttackResult(int player, int row, int col, AttackResul
 				{
 					cout << "Opponent performed an 'Own Goal', smart player will try to sink this ship" << endl;
 				}
-
-				/* Remark:
-				 * If opponent hit his ship (own goal) we want to sink it 
-				 * but we don’t know where it begins!!!
-				 * In this solution we start only from that point right or down (and not left or up) and
-				 * anyway we will get to the other cells on the future routine attacks
-				 * We can think of a new function: attackAfterOwnGoal() that will first attack x and then y, 
-				 * but will identify the direction and attack until sinking */
-				//return;
-			}
-			else  //_attacking_state = Hunting_x or Hunting_y
-			{
-				
-				//Player is already busy hunting another ship
-				
-				//In this case we can save point to a queue and attack it later
 			}
 		}
 	}
@@ -377,23 +374,30 @@ void SmartPlayer::notifyOnAttackResult(int player, int row, int col, AttackResul
 
 bool SmartPlayer::isOpponentOwnGoal(int row, int col, int player) const
 {
-	return player != _playerNum && 
-		(_board[row][col] == EMPTY_CELL || 
+	return player != _playerNum &&
+		(_board[row][col] == EMPTY_CELL ||
 			_board[row][col] == MARKED_CELL);
 }
 
 
-void SmartPlayer::emptySurroundingCells(int row, int col, int y_limit, int x_limit)
+void SmartPlayer::emptySurroundingCells(int row, int col, int y_start, int y_limit, int x_start, int x_limit)
 {
-	for (int i = -1; i <= y_limit; i++)
+	//return;
+	// Set the boundaries for cleaning surrounding cells:
+	y_start = row > 0 ? y_start : 0;
+	y_limit = row <= _rows ? y_limit : 0;
+	x_start = col > 0 ? x_start : 0;
+	x_limit = col <= _cols ? x_limit : 0;
+
+	for (int i = y_start; i <= y_limit; i++)
 	{
-		for (int j = -1; j <= x_limit; j++)
+		for (int j = x_start; j <= x_limit; j++)
 		{
 			//Skip the center and diagonals, and empty cells that were marked for attack
 			if (abs(i) != abs(j) && _board[row + i][col + j] == MARKED_CELL)
 			{
 				_board[row + i][col + j] = EMPTY_CELL; // Unmark cell
-				if(print_mode)
+				if (print_mode)
 				{
 					cout << "unmarked cell " << row + i << "," << col + j << endl;
 				}
